@@ -1,10 +1,13 @@
-import { useState } from "react";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUser,
   faShoppingCart
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
+
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 const NavBar = () => {
   // State to manage the expansion of each criterion
@@ -13,9 +16,40 @@ const NavBar = () => {
     gender: false,
     priceRange: false,
   });
+  const [loading, setLoading] = useState(true);
+
+  const [categories, setCategories] = useState([]);
+
+  // useEffect(() => {
+  //   console.log("running effect");
+  //   //  console.log(user, 'department')
+  //   // Promises
+  //   axios
+  //     .get("http://localhost:3001/categories")
+  //     .then((res) => {
+  //       console.log("response", res.data);
+  //       setCategories(res.data);
+  //       console.log("res categories", categories[0]);
+  //     })
+  //     .catch((e) => {
+  //       console.log("error", e);
+  //     });
+  // }, []);
+
+  useEffect(() => {
+    axios.get("http://localhost:3001/categories")
+      .then((res) => {
+        setCategories(res.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setError(error.message);
+        setLoading(false);
+      });
+  }, []);
 
   return (
-    <header className="bg-gray-800 text-white">
+    <header className="bg-white text-black">
       {/* First Navigation Bar */}
       <div className="container mx-auto flex justify-between items-center p-4">
         {/* Left Section */}
@@ -23,18 +57,21 @@ const NavBar = () => {
           {/* Website Name */}
           <div className="text-2xl font-bold">
             <Link href="/">
-              <span className="text-white">Store Name</span>
+              <span className="text-green-800">Eco Friendly Shoes</span>
             </Link>
           </div>
 
-          
+
           <div className="ml-4">
             <input
               type="text"
               placeholder="Search..."
-              className="px-2 py-1 rounded border-none focus:outline-none text-black"
+              className="px-2 py-1 rounded-md border border-green-800 focus:outline-none text-black"
+              style={{ width: '316px' }}
             />
           </div>
+
+
         </div>
 
         {/* Right Section (Sign In and Bag) */}
@@ -63,26 +100,23 @@ const NavBar = () => {
       </div>
 
       {/* Second Navigation Bar */}
-      <nav className="bg-gray-700 text-white">
+      <nav className="bg-green-600 text-white">
         <div className="container mx-auto flex justify-center p-2">
-          {/* Category Links */}
-          <div className="mx-4">
-            <a className="hover:underline">Heels</a>
-          </div>
-          <div className="mx-4">
-            <a className="hover:underline">Sneakers</a>
-          </div>
-          <div className="mx-4">
-            <a className="hover:underline">Boots</a>
-          </div>
-          <div className="mx-4">
-            <a className="hover:underline">Sandals</a>
-          </div>
-          <div className="mx-4">
-            <a className="hover:underline">Flats</a>
-          </div>
+          {/* Check if categories are still loading */}
+          {loading ? (
+            <div>Loading...</div>
+          ) : (
+            /* Render category links once categories are loaded */
+            categories.map((category, index) => (
+              <div key={index} className="mx-4">
+                <a className="hover:underline">{category.name}</a>
+              </div>
+            ))
+
+          )}
         </div>
       </nav>
+
     </header>
   );
 };
