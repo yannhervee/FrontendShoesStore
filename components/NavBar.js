@@ -1,52 +1,30 @@
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faUser,
-  faShoppingCart
-} from "@fortawesome/free-solid-svg-icons";
+import { faUser, faShoppingCart } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
-
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 const NavBar = () => {
-  // State to manage the expansion of each criterion
-  const [expanded, setExpanded] = useState({
-    size: false,
-    gender: false,
-    priceRange: false,
-  });
   const [loading, setLoading] = useState(true);
-
   const [categories, setCategories] = useState([]);
-
-  // useEffect(() => {
-  //   console.log("running effect");
-  //   //  console.log(user, 'department')
-  //   // Promises
-  //   axios
-  //     .get("http://localhost:3001/categories")
-  //     .then((res) => {
-  //       console.log("response", res.data);
-  //       setCategories(res.data);
-  //       console.log("res categories", categories[0]);
-  //     })
-  //     .catch((e) => {
-  //       console.log("error", e);
-  //     });
-  // }, []);
+  const router = useRouter();
+  const { id } = router.query;
 
   useEffect(() => {
     axios.get("http://localhost:3001/categories")
       .then((res) => {
         setCategories(res.data);
         setLoading(false);
+        console.log("router", router.pathname)
+        console.log('Includes:', router.pathname.includes(`/category/${categories[0].id}`));
       })
       .catch((error) => {
-        setError(error.message);
+        console.error("Error fetching categories:", error);
         setLoading(false);
       });
   }, []);
+  console.log("id ", id);
 
   return (
     <header className="bg-white text-black">
@@ -61,7 +39,6 @@ const NavBar = () => {
             </Link>
           </div>
 
-
           <div className="ml-4">
             <input
               type="text"
@@ -70,8 +47,6 @@ const NavBar = () => {
               style={{ width: '316px' }}
             />
           </div>
-
-
         </div>
 
         {/* Right Section (Sign In and Bag) */}
@@ -109,14 +84,16 @@ const NavBar = () => {
             /* Render category links once categories are loaded */
             categories.map((category, index) => (
               <div key={index} className="mx-4">
-                <a className="hover:underline">{category.name}</a>
+                <Link href={`/category/${category.id}`} passHref={true}>
+                <span className={id == category.id ? 'text-green-600 bg-white px-4 py-2' : 'hover:underline'}>
+                    {category.name}
+                  </span>
+                </Link>
               </div>
             ))
-
           )}
         </div>
       </nav>
-
     </header>
   );
 };
