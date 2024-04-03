@@ -16,8 +16,8 @@ const NavBar = () => {
       .then((res) => {
         setCategories(res.data);
         setLoading(false);
-        console.log("router", router.pathname)
-        console.log('Includes:', router.pathname.includes(`/category/${categories[0].id}`));
+        // console.log("router", router.pathname)
+        // console.log('Includes:', router.pathname.includes(`/category/${categories[0].id}`));
       })
       .catch((error) => {
         console.error("Error fetching categories:", error);
