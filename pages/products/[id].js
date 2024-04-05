@@ -3,14 +3,16 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useSelector, useDispatch } from "react-redux";
+// import { selectUser } from "../features/userSlice";
+import { cartItems, selectCart } from '@/globalRedux/features/cartSlice';
+import { addToGuestCart } from '@/globalRedux/features/guestCartActions';
+import guestCartReducer from '@/globalRedux/features/guestCartSlice';
 
 
 const ProductDetailsPage = () => {
     const productDetails = {
-        name: "Sample Shoe",
-        price: 99.99,
-        sizes: ["7", "8", "9", "10", "11"],
-        colors: ["Black", "White", "Blue", "Red"],
+        
         // Additional product images
         additionalImages: [
           "https://via.placeholder.com/150",
@@ -25,7 +27,7 @@ const ProductDetailsPage = () => {
       const { id } = router.query; // Get the product ID from the URL
       const [selectedSize, setSelectedSize] = useState(null);
       const [selectedColor, setSelectedColor] = useState(null);
-
+      const dispatch = useDispatch();
       
 
       
@@ -35,6 +37,7 @@ const ProductDetailsPage = () => {
       axios.get(`http://localhost:3001/products/${id}`)
         .then((res) => {
           setShoes(res.data.product);
+          console.log("product detail", shoe);
           setLoading(false);
           
         })
@@ -45,6 +48,66 @@ const ProductDetailsPage = () => {
     }
   }, [id]); // Trigger the effect when the category ID changes
 
+
+
+  const handleAddToCart = async (event) => {
+    event.preventDefault();
+    try {
+      // Check if size and color are selected
+      if (!selectedSize || !selectedColor) {
+        alert('Please select size and color.');
+        return;
+      }
+      console.log("product to send: ");
+      console.log("pro_id", shoe.id);
+      console.log("size", selectedSize);
+      console.log("color", selectedColor)
+
+      // ******************************************************** if user *****************************************************************
+      // // for Registered user only
+      // // // Send POST request to add item to cart
+      // // const response = await axios.post('/api/shopping_carts', {
+      // //   product_id: shoe.id,
+      // //   size: selectedSize,
+      // //   color: selectedColor,
+      // //   quantity: 1
+      // // });
+
+      // // // Handle successful response
+      // // console.log('Item added to cart:', response.data);
+      // // dispatch(cartItems(response.data));
+      // *********************************************************************************************************************************
+      // ************************************************************else for guest*******************************************************************
+     // dispatch(addToGuestCart(shoe.id, selectedSize, selectedColor, 1));
+     let cart = JSON.parse(localStorage.getItem('cart')) || [];
+     const shoeId = shoe.id
+     const quantity =1
+     let existingCartItem = cart.find(item => item.shoeId === shoeId && item.selectedSize === selectedSize && item.selectedColor === selectedColor);
+   
+     if (existingCartItem) {
+       // Update quantity if item already exists in cart
+       existingCartItem.quantity += quantity;
+     } else {
+       // Add new item to cart if it doesn't exist
+       const cartItem = { shoeId, selectedSize, selectedColor, quantity };
+       cart.push(cartItem);
+     }
+   
+     // Update local storage with the updated cart
+     localStorage.setItem('cart', JSON.stringify(cart));
+
+
+      // ************************************************************else for guest*******************************************************************
+      
+      
+      router.push("/cart");
+     // alert('Item added to cart successfully!'); // Optional: Display success message
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+      alert('Error adding item to cart. Please try again.'); // Optional: Display error message
+    }
+  };
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -52,10 +115,12 @@ const ProductDetailsPage = () => {
 
   const handleSizeClick = (size) => {
     setSelectedSize(size);
+    console.log("size check", size);
   };
 
   const handleColorClick = (color) => {
     setSelectedColor(color);
+    console.log("color check", color);
   };
   
 
@@ -138,7 +203,7 @@ const ProductDetailsPage = () => {
                 {shoe.colors?.map((color) => (
                     <button
                         key={color}
-                        className={`border border-gray-300 rounded-md py-2 px-4 mr-2 mb-2 ${selectedColor === color ? 'border-black' : ''}`}
+                        className={`border border-gray-300 rounded-md py-2 px-4 mr-2 mb-2 ${selectedColor === color ? 'border-red-300' : ''}`}
                         style={{ width: '100px', height: '40px' }}
                         onClick={() => handleColorClick(color)}
                     >
@@ -150,7 +215,14 @@ const ProductDetailsPage = () => {
 
 
         {/* Add to Cart Button */}
-        <button className="bg-black text-white font-semibold py-2 px-6 rounded-md hover:bg-gray-800">Add to Cart</button>
+        {/* <button className="bg-black text-white font-semibold py-2 px-6 rounded-md hover:bg-gray-800">Add to Cart</button> */}
+        <button
+            className="bg-black text-white font-semibold py-2 px-6 rounded-md hover:bg-gray-800"
+            onClick={handleAddToCart}
+          >
+            Add to Cart
+          </button>
+
       </div>
     </div>
     <div className="mb-4 text-center ">
