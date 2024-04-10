@@ -13,7 +13,7 @@ const Products = () => {
       .then((res) => {
         setProducts(res.data);
         setLoading(false);
-        // console.log('data', res.data);
+         console.log('data', res.data);
       })
       .catch((error) => {
         console.error("Error fetching categories:", error);
