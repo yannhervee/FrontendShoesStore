@@ -1,15 +1,26 @@
 import React, { useState } from "react";
 
-const LeftMenu = () => {
+const LeftMenu = ({ onFilterChange }) => {
   const [expanded, setExpanded] = useState({
     size: false,
-    gender: false,
+    color: false,
     priceRange: false,
+  });
+  const [selectedFilters, setSelectedFilters] = useState({
+    size: [],
+    color: [],
+    priceRange: [],
   });
   const filterOptions = {
     size: ["7", "8", "9"],
-    gender: ["Women", "Men"],
-    priceRange: ["$0 - $50", "$50 - $100"],
+    color: ["Red", "Blue", "White", "Brown", "Gold", "Pink", "Black"],
+    priceRange: [
+      "$0 - $25",
+      "$25 - $50",
+      "$50 - $75",
+      "$75 - $100",
+      "$100 - $200",
+    ],
   };
 
   // Toggle function to handle expansion
@@ -20,8 +31,23 @@ const LeftMenu = () => {
     }));
   };
 
+  // Function to handle filter selection
+  const handleFilterSelect = (filterType, value) => {
+    const newSelectedFilters = {
+      ...selectedFilters,
+      [filterType]: selectedFilters[filterType].includes(value)
+        ? selectedFilters[filterType].filter((item) => item !== value)
+        : [...selectedFilters[filterType], value],
+    };
+
+    setSelectedFilters(newSelectedFilters);
+
+    // Notify parent component of filter change
+    onFilterChange(filterType, newSelectedFilters[filterType]);
+  };
+
   return (
-    <nav className="bg-gray-300 text-gray-800 p-4">
+    <nav className="bg-gray-300 text-gray-800 p-4" style={{ width: "200px" }}>
       <div>
         <h2 className="text-lg font-bold mb-2">Filters</h2>
 
@@ -40,33 +66,43 @@ const LeftMenu = () => {
             <ul>
               {filterOptions.size.map((option) => (
                 <li key={option}>
-                  <a href="#" className="hover:underline">
-                    {option}
-                  </a>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedFilters.size.includes(option)}
+                      onChange={() => handleFilterSelect("size", option)}
+                    />
+                    <span className="ml-2">{option}</span>
+                  </label>
                 </li>
               ))}
             </ul>
           )}
         </div>
 
-        {/* Gender Filter */}
+        {/* Color Filter */}
         <div className="mb-4">
           <div className="flex items-center">
             <button
-              onClick={() => toggleExpansion("gender")}
+              onClick={() => toggleExpansion("color")}
               className="text-blue-500 hover:underline mr-2"
             >
-              {expanded.gender ? "-" : "+"}
+              {expanded.color ? "-" : "+"}
             </button>
-            <h3 className="text-sm font-bold">Gender</h3>
+            <h3 className="text-sm font-bold">Color</h3>
           </div>
-          {expanded.gender && (
+          {expanded.color && (
             <ul>
-              {filterOptions.gender.map((option) => (
+              {filterOptions.color.map((option) => (
                 <li key={option}>
-                  <a href="#" className="hover:underline">
-                    {option}
-                  </a>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedFilters.color.includes(option)}
+                      onChange={() => handleFilterSelect("color", option)}
+                    />
+                    <span className="ml-2">{option}</span>
+                  </label>
                 </li>
               ))}
             </ul>
@@ -88,9 +124,14 @@ const LeftMenu = () => {
             <ul>
               {filterOptions.priceRange.map((option) => (
                 <li key={option}>
-                  <a href="#" className="hover:underline">
-                    {option}
-                  </a>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedFilters.priceRange.includes(option)}
+                      onChange={() => handleFilterSelect("priceRange", option)}
+                    />
+                    <span className="ml-2">{option}</span>
+                  </label>
                 </li>
               ))}
             </ul>
