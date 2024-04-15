@@ -1,54 +1,82 @@
-import React from 'react';
-import axios from "axios";
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { useSelector, useDispatch } from "react-redux";
-// import { selectUser } from "../features/userSlice";
-import { cartItems, selectCart } from '@/globalRedux/features/cartSlice';
-import { addToGuestCart } from '@/globalRedux/features/guestCartActions';
-import guestCartReducer from '@/globalRedux/features/guestCartSlice';
-
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useRouter } from 'next/router';
 
 const ProductDetailsPage = () => {
-    const productDetails = {
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [availableSizes, setAvailableSizes] = useState([]);
+  const [availableColors, setAvailableColors] = useState([]);
+
+  const router = useRouter();
+  const { id } = router.query; // Get the product ID from the URL
+  const productDetails = {
         
-        // Additional product images
-        additionalImages: [
-          "https://via.placeholder.com/150",
-          "https://via.placeholder.com/150",
-          "https://via.placeholder.com/150",
-          // Add more image URLs as needed
-        ],
-      };
-      const [shoe, setShoes] = useState({});
-      const [loading, setLoading] = useState(true);
-      const router = useRouter();
-      const { id } = router.query; // Get the product ID from the URL
-      const [selectedSize, setSelectedSize] = useState(null);
-      const [selectedColor, setSelectedColor] = useState(null);
-      const dispatch = useDispatch();
-      
+    // Additional product images
+    additionalImages: [
+      "https://via.placeholder.com/150",
+      "https://via.placeholder.com/150",
+      "https://via.placeholder.com/150",
+      // Add more image URLs as needed
+    ],
+  };
 
-      
   useEffect(() => {
-    // Fetch products by category ID from the API
+    console.log("id", id)
+    const fetchProductDetails = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/product/${id}`);
+        setProduct(response.data);
+        console.log("product", response.data);
+        
+        // Set default selected size
+        if (response.data.sizeColorDTO.length > 0) {
+          setSelectedSize(response.data.sizeColorDTO[0].size.size);
+        }
+      } catch (error) {
+        console.error('Error fetching product details:', error);
+        setLoading(false);
+      }
+
+      fetch('http://localhost:8080/sizes')
+      .then(response => response.json())
+      .then(data => {
+          console.log("data for sizes", data);
+          setAvailableSizes(data)
+      })
+      .catch(error => console.error('Failed to load sizes:', error));
+
+  // Fetch colors
+  fetch('http://localhost:8080/colors')
+      .then(response => response.json())
+      .then(data => {
+          console.log("data for colors", data);
+          setAvailableColors(data)
+      })
+      .catch(error => console.error('Failed to load colors:', error));
+    };
+
     if (id) {
-      axios.get(`http://localhost:3001/products/${id}`)
-        .then((res) => {
-          setShoes(res.data.product);
-          console.log("product detail", shoe);
-          setLoading(false);
-          
-        })
-        .catch((error) => {
-            console.error("Error fetching categories:", error);
-          setLoading(false);
-        });
+      fetchProductDetails();
     }
-  }, [id]); // Trigger the effect when the category ID changes
+    setLoading(false);
+  }, [id]);
 
+  useEffect(() => {
+    // Update selected color when selected size changes
+    setSelectedColor(null);
+  }, [selectedSize]);
 
+  const handleSizeClick = (size) => {
+    setSelectedSize(size);
+    setSelectedColor(null); // Reset selected color when size changes
+  };
+
+  const handleColorClick = (color) => {
+    setSelectedColor(color);
+  };
 
   const handleAddToCart = async (event) => {
     event.preventDefault();
@@ -58,76 +86,68 @@ const ProductDetailsPage = () => {
         alert('Please select size and color.');
         return;
       }
-      console.log("product to send: ");
-      console.log("pro_id", shoe.id);
-      console.log("size", selectedSize);
-      console.log("color", selectedColor)
 
-      // ******************************************************** if user *****************************************************************
-      // // for Registered user only
-      // // // Send POST request to add item to cart
-      // // const response = await axios.post('/api/shopping_carts', {
-      // //   product_id: shoe.id,
-      // //   size: selectedSize,
-      // //   color: selectedColor,
-      // //   quantity: 1
-      // // });
+      const sizeColorDTO = product?.sizeColorDTO.find((sizeColor) => sizeColor.size.size === selectedSize.size);
+      const selectedColorInfo = sizeColorDTO?.color.find((colorInfo) => colorInfo.color.color === selectedColor.color);
+     
 
-      // // // Handle successful response
-      // // console.log('Item added to cart:', response.data);
-      // // dispatch(cartItems(response.data));
-      // *********************************************************************************************************************************
-      // ************************************************************else for guest*******************************************************************
-     // dispatch(addToGuestCart(shoe.id, selectedSize, selectedColor, 1));
-     let cart = JSON.parse(localStorage.getItem('cart')) || [];
-     const shoeId = shoe.id
-     const quantity =1
-     let existingCartItem = cart.find(item => item.shoeId === shoeId && item.selectedSize === selectedSize && item.selectedColor === selectedColor);
-   
-     if (existingCartItem) {
-       // Update quantity if item already exists in cart
-       existingCartItem.quantity += quantity;
-     } else {
-       // Add new item to cart if it doesn't exist
-       const cartItem = { shoeId, selectedSize, selectedColor, quantity };
-       cart.push(cartItem);
-     }
-   
-     // Update local storage with the updated cart
-     localStorage.setItem('cart', JSON.stringify(cart));
+      // Check if the selected size-color combination is in stock
+      if (!selectedColorInfo || selectedColorInfo.quantity === 0) {
+        alert('Selected size-color combination is out of stock.');
+        return;
+      }
+
+      // Add the product to the cart or perform any other action
+      // Example: dispatching an action to add to the cart
+      const cartItem = {
+        productId: product.product.id,
+        sizeId: sizeColorDTO.size.id,
+        colorId: selectedColorInfo.color.id,
+        quantity: 1, // Default quantity
+        stockQuantity: 1
+      };
+      let cart = JSON.parse(localStorage.getItem('shopping_cart')) || [];
+      // Check if the item already exists in the cart
+      let existingCartItem = cart.find(item =>
+        item.productId === cartItem.productId &&
+        item.sizeId === cartItem.sizeId &&
+        item.colorId === cartItem.colorId
+      );
+      if (existingCartItem) {
+        // Update quantity if item already exists in cart
+        console.log("existingcart item", existingCartItem)
+        existingCartItem.quantity += 1;
+      } else {
+        // Add new item to cart if it doesn't exist
+
+        cart.push(cartItem);
+      }
 
 
-      // ************************************************************else for guest*******************************************************************
-      
-      
+      // Save updated cart to local storage
+      localStorage.setItem('shopping_cart', JSON.stringify(cart));
       router.push("/cart");
-     // alert('Item added to cart successfully!'); // Optional: Display success message
     } catch (error) {
       console.error('Error adding item to cart:', error);
       alert('Error adding item to cart. Please try again.'); // Optional: Display error message
     }
+
   };
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+  if (loading || !product) {
+    return <div>Loading...</div>;
+  }
 
-
-  const handleSizeClick = (size) => {
-    setSelectedSize(size);
-    console.log("size check", size);
-  };
-
-  const handleColorClick = (color) => {
-    setSelectedColor(color);
-    console.log("color check", color);
-  };
-  
+  // Extract unique sizes and colors
+  const uniqueSizes = [...new Set(product.sizeColorDTO.map((sizeColor) => sizeColor.size.size))];
+  const uniqueColors = product.sizeColorDTO
+    .find((sizeColor) => sizeColor.size.size === selectedSize)
+    ?.color.map((colorInfo) => colorInfo.color.color) || [];
 
   return (
     <>
-    <h1 className="text-3xl font-bold mb-4 text-center mt-24">{shoe.category_name}</h1>
-    <div className="max-w-6xl mx-auto px-4 py-64 flex pt-20 pb-8">
+  <h1 className="text-3xl font-bold mb-4 text-center mt-24 mr-32">{product.product.category.category}</h1>
+    <div className=" mx-auto py-64 flex pt-20 pb-8 pr-0 pl-0 mr-20 ml-20">
         
       {/* Reasons to Buy */}
       <div className="flex flex-col justify-between mr-8">
@@ -178,38 +198,47 @@ const ProductDetailsPage = () => {
       {/* Product Information */}
       <div className="flex flex-col justify-between">
         <div>
-          <h1 className="text-2xl font-bold mb-4">{shoe.name}</h1>
-          <p className="text-gray-700 mb-4">Price: ${shoe.price.toFixed(2)}</p>
+        <h1 className="text-2xl font-bold mb-4">
+  {product.product.name}{" "}
+  {product.sizeColorDTO.length === 0 ? <span className="text-red-500">(Out of Stock)</span> : null}
+</h1>
+
+          <p className="text-gray-700 mb-4">Price: ${product.product.price.toFixed(2)}</p>
         </div>
         {/* Size Options */}
         <div className="mb-4">
             <label className="font-medium">Select Size:</label>
             <div className="flex mt-2">
-                {shoe.sizes.map((size) => (
-                    <button
-                        key={size}
-                        className={`border border-gray-300 rounded-md py-2 px-4 mr-2 ${selectedSize === size ? 'bg-black text-white' : ''}`}
-                        onClick={() => handleSizeClick(size)}
-                    >
-                        {size}
-                    </button>
-                ))}
+
+
+            {availableSizes.map((size) => (
+            <button
+              key={size}
+              className={`disabled:text-white disabled:bg-gray-600 border border-gray-300 rounded-md py-2 px-4 mr-2 ${selectedSize === size ? 'bg-black text-white' : ''
+                }`}
+                disabled={!uniqueSizes.find(s=>s===size.size)}
+              onClick={() => handleSizeClick(size)}
+            >
+              {size.size}
+            </button>
+          ))}
             </div>
         </div>
         {/* Color Options */}
         <div className="mb-8">
             <label className="font-medium">Select Color:</label>
             <div className="flex mt-2 flex-wrap mb-8">
-                {shoe.colors?.map((color) => (
-                    <button
-                        key={color}
-                        className={`border border-gray-300 rounded-md py-2 px-4 mr-2 mb-2 ${selectedColor === color ? 'border-red-300' : ''}`}
-                        style={{ width: '100px', height: '40px' }}
-                        onClick={() => handleColorClick(color)}
-                    >
-                        {color}
-                    </button>
-                ))}
+            {availableColors.map((color) => (
+            <button
+              key={color.color}
+              className={`disabled:text-white disabled:bg-gray-600 border border-gray-300 rounded-md py-2 px-4 mr-2 ${selectedColor === color ? 'border-red-300' : ''}`}
+              style={{ width: '80px', height: '40px' }}
+              onClick={() => handleColorClick(color)}
+              disabled={!product.sizeColorDTO.some((sizeColor) => sizeColor.color.some((colorInfo) => colorInfo.color.color === color.color && colorInfo.quantity > 0))}
+            >
+              {color.color}
+            </button>
+          ))}
             </div>
         </div>
 
@@ -226,11 +255,15 @@ const ProductDetailsPage = () => {
       </div>
     </div>
     <div className="mb-4 text-center ">
-        <p> {shoe.description}</p>
+        <p> {product.product.description}</p>
     </div>
+
+
+    {/*************************************Temp return code adjust above ***********/ }
+    
+
     </>
   );
-}
+};
 
 export default ProductDetailsPage;
-

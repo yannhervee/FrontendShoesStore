@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const LeftMenu = ({ onFilterChange }) => {
+const LeftMenu = () => {
   const [expanded, setExpanded] = useState({
     size: false,
     color: false,

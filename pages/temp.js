@@ -1,115 +1,264 @@
-import React from 'react';
-import axios from "axios";
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/router";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useRouter } from 'next/router';
 
-// import { selectUser } from "../features/userSlice";
-import { cartItems, selectCart } from '@/globalRedux/features/cartSlice';
-import { addToGuestCart } from '@/globalRedux/features/guestCartActions';
-import guestCartReducer from '@/globalRedux/features/guestCartSlice';
+const ProductDetailsPage = () => {
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [availableSizes, setAvailableSizes] = useState([]);
+  const [availableColors, setAvailableColors] = useState([]);
 
-
-const ShoppingCartPage = () => {
-  // Sample product data
-  const products = [
-    {
-      id: 1,
-      name: 'Running Shoes',
-      price: 120.00,
-      quantity: 1,
-      color: 'Black',
-      size: '10',
-      image: 'https://via.placeholder.com/150',
-    },
-    {
-      id: 2,
-      name: 'Sneakers',
-      price: 85.00,
-      quantity: 1,
-      color: 'White',
-      size: '9',
-      image: 'https://via.placeholder.com/150',
-    }
-  ];
-
-  // Calculate total price
-  const totalPrice = products.reduce((acc, product) => acc + (product.price * product.quantity), 0);
-
-  // Function to remove an item from the cart
-  const removeFromCart = (productId) => {
-    // Implement removal logic here
-    console.log(`Remove product with id ${productId} from cart`);
+  const router = useRouter();
+  const id = 102;
+  const productDetails = {
+        
+    // Additional product images
+    additionalImages: [
+      "https://via.placeholder.com/150",
+      "https://via.placeholder.com/150",
+      "https://via.placeholder.com/150",
+      // Add more image URLs as needed
+    ],
   };
 
-  return (
-    <div className="flex justify-center p-8">
-      <div className="flex max-w-6xl w-full">
-        {/* Shopping Cart */}
-        <div className="flex flex-col flex-1 mr-4 max-w-[806px]">
-          <h1 className="text-2xl font-bold mb-4">Shopping Cart</h1>
-          {products.map(product => (
-            <div key={product.id} className="flex items-center border-b border-gray-300 py-4">
-              <div className="flex-shrink-0 w-16 h-16 bg-gray-200 mr-4"></div>
-              <div className="flex flex-col flex-1">
-                <div className="text-lg font-semibold">{product.name}</div>
-                <div className="text-gray-600">Color: {product.color}</div>
-                <div className="text-gray-600">
-                  <label htmlFor={`size-${product.id}`}>Size:</label>
-                  <select
-                    id={`size-${product.id}`}
-                    className="border border-gray-300 rounded-md py-1 px-2 text-sm focus:outline-none ml-2"
-                    defaultValue={product.size}
-                  >
-                    {[6, 7, 8, 9, 10, 11].map(size => (
-                      <option key={size}>{size}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="text-gray-600">
-                  <label htmlFor={`quantity-${product.id}`}>Quantity:</label>
-                  <select
-                    id={`quantity-${product.id}`}
-                    className="border border-gray-300 rounded-md py-1 px-2 text-sm focus:outline-none ml-2"
-                    defaultValue={product.quantity}
-                  >
-                    {[1, 2, 3, 4, 5].map(quantity => (
-                      <option key={quantity}>{quantity}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="text-lg font-semibold">${product.price}</div>
-              <button className="text-gray-500 underline ml-4" onClick={() => removeFromCart(product.id)}>Remove</button>
-            </div>
-          ))}
-        </div>
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/product/${id}`);
+        setProduct(response.data);
+        console.log(response.data);
+        
+        // Set default selected size
+        if (response.data.sizeColorDTO.length > 0) {
+          setSelectedSize(response.data.sizeColorDTO[0].size.size);
+        }
+      } catch (error) {
+        console.error('Error fetching product details:', error);
+        setLoading(false);
+      }
 
-        {/* Order Summary */}
-        <div className="bg-gray-100 rounded-lg p-6 flex flex-col items-center justify-between">
-          <h2 className="text-lg font-bold mb-4">Order Summary</h2>
-          <div className="flex justify-between w-full mb-2">
-            <div>Subtotal</div>
-            <div>${totalPrice.toFixed(2)}</div>
-          </div>
-          <div className="flex justify-between w-full mb-2">
-            <div>Shipping</div>
-            <div>Free</div>
-          </div>
-          <div className="flex justify-between w-full mb-2">
-            <div>Tax</div>
-            <div>$0.00</div>
-          </div>
-          <div className="flex justify-between w-full mb-4">
-            <div>Total</div>
-            <div>${totalPrice.toFixed(2)}</div>
-          </div>
-          <button className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Checkout</button>
+      fetch('http://localhost:8080/sizes')
+      .then(response => response.json())
+      .then(data => {
+          console.log("data for sizes", data);
+          setAvailableSizes(data)
+      })
+      .catch(error => console.error('Failed to load sizes:', error));
+
+  // Fetch colors
+  fetch('http://localhost:8080/colors')
+      .then(response => response.json())
+      .then(data => {
+          console.log("data for colors", data);
+          setAvailableColors(data)
+      })
+      .catch(error => console.error('Failed to load colors:', error));
+    };
+
+    if (id) {
+      fetchProductDetails();
+    }
+    setLoading(false);
+  }, [id]);
+
+  useEffect(() => {
+    // Update selected color when selected size changes
+    setSelectedColor(null);
+  }, [selectedSize]);
+
+  const handleSizeClick = (size) => {
+    setSelectedSize(size);
+    setSelectedColor(null); // Reset selected color when size changes
+  };
+
+  const handleColorClick = (color) => {
+    setSelectedColor(color);
+  };
+
+  const handleAddToCart = async (event) => {
+    event.preventDefault();
+    try {
+      // Check if size and color are selected
+      if (!selectedSize || !selectedColor) {
+        alert('Please select size and color.');
+        return;
+      }
+
+      const sizeColorDTO = product?.sizeColorDTO.find((sizeColor) => sizeColor.size.size === selectedSize.size);
+      const selectedColorInfo = sizeColorDTO?.color.find((colorInfo) => colorInfo.color.color === selectedColor.color);
+     
+
+      // Check if the selected size-color combination is in stock
+      if (!selectedColorInfo || selectedColorInfo.quantity === 0) {
+        alert('Selected size-color combination is out of stock.');
+        return;
+      }
+
+      // Add the product to the cart or perform any other action
+      // Example: dispatching an action to add to the cart
+      const cartItem = {
+        productId: product.product.id,
+        sizeId: sizeColorDTO.size.id,
+        colorId: selectedColorInfo.color.id,
+        quantity: 1, // Default quantity
+        stockQuantity: 1
+      };
+      let cart = JSON.parse(localStorage.getItem('shopping_cart')) || [];
+      // Check if the item already exists in the cart
+      let existingCartItem = cart.find(item =>
+        item.productId === cartItem.productId &&
+        item.sizeId === cartItem.sizeId &&
+        item.colorId === cartItem.colorId
+      );
+      if (existingCartItem) {
+        // Update quantity if item already exists in cart
+        console.log("existingcart item", existingCartItem)
+        existingCartItem.quantity += 1;
+      } else {
+        // Add new item to cart if it doesn't exist
+
+        cart.push(cartItem);
+      }
+
+
+      // Save updated cart to local storage
+      localStorage.setItem('shopping_cart', JSON.stringify(cart));
+      router.push("/cart");
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+      alert('Error adding item to cart. Please try again.'); // Optional: Display error message
+    }
+
+  };
+
+  if (loading || !product) {
+    return <div>Loading...</div>;
+  }
+
+  // Extract unique sizes and colors
+  const uniqueSizes = [...new Set(product.sizeColorDTO.map((sizeColor) => sizeColor.size.size))];
+  const uniqueColors = product.sizeColorDTO
+    .find((sizeColor) => sizeColor.size.size === selectedSize)
+    ?.color.map((colorInfo) => colorInfo.color.color) || [];
+
+  return (
+    <>
+  <h1 className="text-3xl font-bold mb-4 text-center mt-24 mr-32">{product.product.category.category}</h1>
+    <div className=" mx-auto py-64 flex pt-20 pb-8 pr-0 pl-0 mr-20 ml-20">
+        
+      {/* Reasons to Buy */}
+      <div className="flex flex-col justify-between mr-8">
+        <p className="text-gray-700 mb-4">Why Buy Eco-Friendly Shoes?</p>
+        <div className="mb-2">
+          <p className="font-medium">1. Sustainable Materials</p>
+          <p className="text-gray-600">Reduce environmental impact with eco-conscious materials.</p>
+        </div>
+        <div className="mb-2">
+          <p className="font-medium">2. Ethical Production</p>
+          <p className="text-gray-600">Support fair labor practices and humane working conditions.</p>
+        </div>
+        <div>
+          <p className="font-medium">3. Reduce Waste</p>
+          <p className="text-gray-600">Contribute to reducing landfill waste with biodegradable components.</p>
         </div>
       </div>
+
+      {/* Other product images */}
+      <div className="flex flex-col items-center mr-8">
+
+        {productDetails.additionalImages.map((image, index) => (
+          <img key={index} src={image} alt={`Product ${index}`} className="rounded-lg mb-4" />
+        ))}
+      </div>
+
+      {/* Main Product Image */}
+      <div className="relative flex-shrink-0 mr-8">
+        <img src="https://via.placeholder.com/400" alt="Main product" className="w-full rounded-lg mb-4" />
+        {/* Left arrow */}
+        <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-8">
+          <div className="bg-white rounded-full p-2 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </div>
+        </div>
+        {/* Right arrow */}
+        <div className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-8">
+          <div className="bg-white rounded-full p-2 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* Product Information */}
+      <div className="flex flex-col justify-between">
+        <div>
+          <h1 className="text-2xl font-bold mb-4">{product.product.name}</h1>
+          <p className="text-gray-700 mb-4">Price: ${product.product.price.toFixed(2)}</p>
+        </div>
+        {/* Size Options */}
+        <div className="mb-4">
+            <label className="font-medium">Select Size:</label>
+            <div className="flex mt-2">
+
+
+            {availableSizes.map((size) => (
+            <button
+              key={size}
+              className={`disabled:text-slate-500 disabled:bg-slate-50 border border-gray-300 rounded-md py-2 px-4 mr-2 ${selectedSize === size ? 'bg-black text-white' : ''
+                }`}
+                disabled={!uniqueSizes.find(s=>s===size.size)}
+              onClick={() => handleSizeClick(size)}
+            >
+              {size.size}
+            </button>
+          ))}
+            </div>
+        </div>
+        {/* Color Options */}
+        <div className="mb-8">
+            <label className="font-medium">Select Color:</label>
+            <div className="flex mt-2 flex-wrap mb-8">
+            {availableColors.map((color) => (
+            <button
+              key={color.color}
+              className={`disabled:text-slate-500 disabled:bg-slate-50 border border-gray-300 rounded-md py-2 px-4 mr-2 ${selectedColor === color ? 'border-red-300' : ''}`}
+              style={{ width: '80px', height: '40px' }}
+              onClick={() => handleColorClick(color)}
+              disabled={!product.sizeColorDTO.some((sizeColor) => sizeColor.color.some((colorInfo) => colorInfo.color.color === color.color && colorInfo.quantity > 0))}
+            >
+              {color.color}
+            </button>
+          ))}
+            </div>
+        </div>
+
+
+        {/* Add to Cart Button */}
+        {/* <button className="bg-black text-white font-semibold py-2 px-6 rounded-md hover:bg-gray-800">Add to Cart</button> */}
+        <button
+            className="bg-black text-white font-semibold py-2 px-6 rounded-md hover:bg-gray-800"
+            onClick={handleAddToCart}
+          >
+            Add to Cart
+          </button>
+
+      </div>
     </div>
+    <div className="mb-4 text-center ">
+        <p> {product.product.description}</p>
+    </div>
+
+
+    {/*************************************Temp return code adjust above ***********/ }
+    
+
+    </>
   );
-}
+};
 
-export default ShoppingCartPage;
-
+export default ProductDetailsPage;

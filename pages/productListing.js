@@ -14,7 +14,7 @@ const Products = () => {
   });
 
   useEffect(() => {
-    axios.get("http://localhost:3001/products")
+    axios.get("http://localhost:8080/product")
       .then((res) => {
         setProducts(res.data);
         setFilteredProducts(res.data); // Initialize filtered products with all products
@@ -63,7 +63,7 @@ const Products = () => {
 
   return (
     <div className="container mx-auto mt-8 flex ml-0">
-      <LeftMenu onFilterChange={handleFilterChange} />
+      <LeftMenu />
       <div className="flex-1 ml-4 mr-4, ml-32">
         <h1 className="text-3xl font-bold mb-4">Women’s Eco Friendly Shoes</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -71,11 +71,11 @@ const Products = () => {
             <div>Loading...</div>
           ) : (
              filteredProducts.map((product) => (
-              <Link key={product.id} href={`/products/${product.id}`} passHref>
-              <div key={product.id} className="bg-blue-500 p-4 rounded-md overflow-hidden block">
+              <Link key={product.productId} href={`/products/${product.productId}`} passHref>
+              <div key={product.productId} className="bg-blue-500 p-4 rounded-md overflow-hidden block">
                 <div className="h-32 w-full bg-blue-700 mb-4"></div>
                 <p className="text-white font-bold text-lg">{product.name}</p>
-                <p className="text-gray-300">{product.category_name}</p>
+                <p className="text-gray-300">{product.category}</p>
                 <p className="text-green-400 font-bold">${product.price}</p>
               </div>
               </Link>

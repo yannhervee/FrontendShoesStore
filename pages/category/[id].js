@@ -23,6 +23,7 @@ const ProductByCategory = () => {
       try {
         const response = await axios.get(`http://localhost:3001/products/category/${id}`);
         setProducts(response.data);
+        console.log(response.data)
         setFilteredProducts(response.data);
       } catch (error) {
         console.error("Error fetching products:", error);
