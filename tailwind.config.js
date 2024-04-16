@@ -11,6 +11,15 @@ module.exports = {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        
+      },
+      width: {
+        '512': '512px',  // Key can be any name, but using the pixel value helps remember what it does
+        '150': '150px',
+      },
+      height: {
+        '512': '512px',  // Key can be any name, but using the pixel value helps remember what it does
+        '150': '150px',
       },
     },
   },
