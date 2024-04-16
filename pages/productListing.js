@@ -42,8 +42,17 @@ const Products = () => {
             return selectedValues.some((size) => product.sizes.includes(parseInt(size)));
           }
           if (type === "color" && selectedValues.length > 0) {
-            return selectedValues.some((color) => product.color_names.includes(color));
-          }
+            // console.log("Selected Colors:", selectedValues);
+            // console.log("Product Colors:", product.color_names);
+        
+            return selectedValues.some((selectedColor) =>
+                product.color_names.some((productColor) =>
+                    productColor.toLowerCase() === selectedColor.toLowerCase()
+                )
+            );
+        }
+        
+        
           if (type === "priceRange" && selectedValues.length > 0) {
             return selectedValues.some((priceRange) => {
               const [minStr, maxStr] = priceRange.split(" - ");
@@ -63,7 +72,7 @@ const Products = () => {
 
   return (
     <div className="container mx-auto mt-8 flex ml-0">
-      <LeftMenu />
+      <LeftMenu onFilterChange={handleFilterChange} />
       <div className="flex-1 ml-4 mr-4, ml-32">
         <h1 className="text-3xl font-bold mb-4">Women’s Eco Friendly Shoes</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
