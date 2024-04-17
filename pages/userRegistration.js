@@ -1,5 +1,5 @@
+
 import { useState } from 'react';
-import './Register.css'; 
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -12,8 +12,6 @@ export default function Register() {
 
   const [errors, setErrors] = useState({});
 
-
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
@@ -21,7 +19,6 @@ export default function Register() {
       [name]: value
     }));
   
-    
     setErrors(prevErrors => ({
       ...prevErrors,
       [name]: validateField(name, value)
@@ -29,47 +26,34 @@ export default function Register() {
   };
 
   const validateField = (name, value) => {
+    let error = '';
     
     switch (name) {
       case 'firstName':
-        if (!value.trim()) {
-          return 'First name is required';
-        }
+        error = !value.trim() ? 'First name is required' : '';
         break;
       case 'lastName':
-        if (!value.trim()) {
-          return 'Last name is required';
-        }
+        error = !value.trim() ? 'Last name is required' : '';
         break;
       case 'email':
-        if (!value.trim()) {
-          return 'Email is required';
-        } else if (!/\S+@\S+\.\S+/.test(value)) {
-          return 'Email is invalid';
-        }
+        error = !value.trim() ? 'Email is required' : !/\S+@\S+\.\S+/.test(value) ? 'Email is invalid' : '';
         break;
       case 'zipCode':
-        if (!value.trim()) {
-          return 'Zip code is required';
-        } else if (!/^\d{5}(-\d{4})?$/.test(value)) {
-          return 'Zip code is invalid';
-        }
+        error = !value.trim() ? 'Zip code is required' : !/^\d{5}(-\d{4})?$/.test(value) ? 'Zip code is invalid' : '';
         break;
       case 'password':
-        if (!value) {
-          return 'Password is required';
-        } else if (value.length < 6) {
-          return 'Password must be at least 6 characters';
-        }
+        error = !value ? 'Password is required' : value.length < 6 ? 'Password must be at least 6 characters' : '';
         break;
       default:
-        return '';
+        break;
     }
-    return '';
+    
+    return error;
   };
 
   const validateForm = () => {
     let newErrors = {};
+    
     // First name validation
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
@@ -117,73 +101,71 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen tems-center justify-center bg-green-500 pr-20">
-    <div className="registration-container">
-      <h1>Become a Member</h1>
-      <div className="form-container">
-        <form onSubmit={handleSubmit} className="registration-form">
-          <div className="form-group">
+    <div className="min-h-screen flex items-center justify-center bg-green-500 px-4">
+      <div className="max-w-md w-full bg-white p-8 rounded shadow-md">
+        <h1 className="text-2xl font-bold mb-4">Become a Member</h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
             <input 
               type="text"
               name="firstName"
               placeholder="First name"
               value={formData.firstName}
               onChange={handleChange}
-              className={errors.firstName ? 'input-error' : ''}
+              className={`w-full px-3 py-2 border rounded ${errors.firstName ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.firstName && <p className="error-message">{errors.firstName}</p>}
+            {errors.firstName && <p className="text-red-500 mt-1">{errors.firstName}</p>}
           </div>
-          <div className="form-group">
+          <div>
             <input 
               type="text"
               name="lastName"
               placeholder="Last name"
               value={formData.lastName}
               onChange={handleChange}
-              className={errors.lastName ? 'input-error' : ''}
+              className={`w-full px-3 py-2 border rounded ${errors.lastName ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.lastName && <p className="error-message">{errors.lastName}</p>}
+            {errors.lastName && <p className="text-red-500 mt-1">{errors.lastName}</p>}
           </div>
-          <div className="form-group">
+          <div>
             <input 
               type="email"
               name="email"
               placeholder="Email"
               value={formData.email}
               onChange={handleChange}
-              className={errors.email ? 'input-error' : ''}
+              className={`w-full px-3 py-2 border rounded ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.email && <p className="error-message">{errors.email}</p>}
+            {errors.email && <p className="text-red-500 mt-1">{errors.email}</p>}
           </div>
-          <div className="form-group">
+          <div>
             <input 
               type="text"
               name="zipCode"
               placeholder="Zip Code"
               value={formData.zipCode}
               onChange={handleChange}
-              className={errors.zipCode ? 'input-error' : ''}
+              className={`w-full px-3 py-2 border rounded ${errors.zipCode ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.zipCode && <p className="error-message">{errors.zipCode}</p>}
+            {errors.zipCode && <p className="text-red-500 mt-1">{errors.zipCode}</p>}
           </div>
-          <div className="form-group">
+          <div>
             <input 
               type="password"
               name="password"
               placeholder="Password"
               value={formData.password}
               onChange={handleChange}
-              className={errors.password ? 'input-error' : ''}
+              className={`w-full px-3 py-2 border rounded ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
             />
-            {errors.password && <p className="error-message">{errors.password}</p>}
+            {errors.password && <p className="text-red-500 mt-1">{errors.password}</p>}
           </div>
-          <button type="submit" className="register-button">Sign Up for Free</button>
-          <div className="sign-in-link">
-            Already a member? <a href="/signin">Sign in</a>
+          <button type="submit" className="w-full bg-green-500 text-white px-4 py-2 rounded">Sign Up for Free</button>
+          <div className="text-center mt-4">
+            Already a member? <a href="/login" className="text-green-500">Sign in</a>
           </div>
         </form>
       </div>
-    </div>
     </div>
   );
 }
