@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const CheckoutReviewPage = () => {
   // Sample data
-  
+
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -155,7 +155,7 @@ const CheckoutReviewPage = () => {
     console.log('Edit email');
     console.log("modal", showModalEmail)
     console.log("updated email is", email)
-    
+
     localStorage.setItem('email', email);
 
     setShowModalEmail(false);
@@ -172,92 +172,92 @@ const CheckoutReviewPage = () => {
       const parsedValue = name === 'cardNumber' || name === 'expMonth' || name === 'expYear' || name === 'cvv' ? parseInt(value) : value;
       setPaymentInfo({ ...paymentInfo, [name]: parsedValue });
     } else {
-        // Display an alert to the user
-        alert('Please enter numeric values for card number, expiration month, expiration year, and CVV.');
-        e.target.value = '';
+      // Display an alert to the user
+      alert('Please enter numeric values for card number, expiration month, expiration year, and CVV.');
+      e.target.value = '';
     }
-};
+  };
 
-const handleCancelModalBilling = () => {
-  // Implement modal logic to edit billing information
-  console.log('same Billing');
-  console.log("cart items", cartItems);
+  const handleCancelModalBilling = () => {
+    // Implement modal logic to edit billing information
+    console.log('same Billing');
+    console.log("cart items", cartItems);
 
-  const billing = JSON.parse(localStorage.getItem('billing_info'));
-          if (billing) {
-              setBillingInfo({
-                  firstName: billing.firstName,
-                  lastName: billing.lastName,
-                  address: billing.address,
-                  city: billing.city,
-                  state: billing.state,
-                  zipCode: billing.zipCode,
-              });
-          }
-          console.log("Billing info cancel", billingInfo);
-          setShowModalBilling(false);
+    const billing = JSON.parse(localStorage.getItem('billing_info'));
+    if (billing) {
+      setBillingInfo({
+        firstName: billing.firstName,
+        lastName: billing.lastName,
+        address: billing.address,
+        city: billing.city,
+        state: billing.state,
+        zipCode: billing.zipCode,
+      });
+    }
+    console.log("Billing info cancel", billingInfo);
+    setShowModalBilling(false);
 
-};
+  };
 
-const handleCancelModalShipping = () => {
-  // Implement modal logic to edit billing information
-  
-  console.log("Handling cancellation of shipping info form");
-          const shipping = JSON.parse(localStorage.getItem('shipping_info'));
-          if (shipping) {
-            setShippingInfo({
-              firstName: shipping.firstName,
-              lastName: shipping.lastName,
-              address: shipping.address,
-              city: shipping.city,
-              state: shipping.state,
-              zipCode: shipping.zipCode,
-            })
-          }
-          console.log("Shipping info cancel", shippingInfo);
-          setShowModalShipping(false);
+  const handleCancelModalShipping = () => {
+    // Implement modal logic to edit billing information
 
-};
+    console.log("Handling cancellation of shipping info form");
+    const shipping = JSON.parse(localStorage.getItem('shipping_info'));
+    if (shipping) {
+      setShippingInfo({
+        firstName: shipping.firstName,
+        lastName: shipping.lastName,
+        address: shipping.address,
+        city: shipping.city,
+        state: shipping.state,
+        zipCode: shipping.zipCode,
+      })
+    }
+    console.log("Shipping info cancel", shippingInfo);
+    setShowModalShipping(false);
 
-const handleCancelModalPayment = () => {
-  // Implement modal logic to edit billing information
-  console.log("Handling cancellation of payment info form");
-  const payment = JSON.parse(localStorage.getItem('payment_info'));
-if (payment) {
-setPaymentInfo({
-cardNumber: payment.cardNumber,
-cvv: payment.cvv,
-expMonth: payment.expMonth,
-expYear: payment.expYear,
-})
-}
-console.log("payment info cancel", paymentInfo);
-  setShowModalPayment(false);
+  };
 
-          
-
-};
-
-const handleCancelModalEmail = () => {
-  // Implement modal logic to edit billing information
-  console.log('same email');
-
-  console.log("Handling cancellation of email");
-          const em = localStorage.getItem('email');
-          if (em) {
-            setEmail(em)
-          }
-          console.log("email", email);
-         
-          setShowModalEmail(false);
-
-};
+  const handleCancelModalPayment = () => {
+    // Implement modal logic to edit billing information
+    console.log("Handling cancellation of payment info form");
+    const payment = JSON.parse(localStorage.getItem('payment_info'));
+    if (payment) {
+      setPaymentInfo({
+        cardNumber: payment.cardNumber,
+        cvv: payment.cvv,
+        expMonth: payment.expMonth,
+        expYear: payment.expYear,
+      })
+    }
+    console.log("payment info cancel", paymentInfo);
+    setShowModalPayment(false);
 
 
 
-const handleEmailChangeInput = (event) => {
-  setEmail(event.target.value); // Assuming setEmail is your state updater function
-};
+  };
+
+  const handleCancelModalEmail = () => {
+    // Implement modal logic to edit billing information
+    console.log('same email');
+
+    console.log("Handling cancellation of email");
+    const em = localStorage.getItem('email');
+    if (em) {
+      setEmail(em)
+    }
+    console.log("email", email);
+
+    setShowModalEmail(false);
+
+  };
+
+
+
+  const handleEmailChangeInput = (event) => {
+    setEmail(event.target.value); // Assuming setEmail is your state updater function
+  };
 
 
   // // Function to handle form submission
@@ -315,7 +315,7 @@ const handleEmailChangeInput = (event) => {
       },
       orderId: 0 // Assuming if you're tracking orderId prior to creation
     };
-  
+
     try {
       const response = await axios.post('http://localhost:8080/order', orderData);
       console.log('Order submitted successfully:', response.data);
@@ -323,7 +323,7 @@ const handleEmailChangeInput = (event) => {
       localStorage.removeItem('billing_info');
       localStorage.removeItem('shipping_info');
       localStorage.removeItem('payment_info');
-      localStorage.removeItem('email'); 
+      localStorage.removeItem('email');
       router.push({
         pathname: '/orderConfirmation',
         query: { orderNumber: response.data.orderId }, // Pass as a query param
@@ -335,7 +335,7 @@ const handleEmailChangeInput = (event) => {
       // Handle errors such as showing a user message
     }
   };
-  
+
 
   if (loading) {
     return <div>Loading...</div>;
@@ -357,9 +357,9 @@ const handleEmailChangeInput = (event) => {
               <p>{email}</p>
             </div>
             <button className="text-blue-500 underline" onClick={(e) => {
-                                    e.preventDefault();
-                                    setShowModalEmail(true);
-                                }}>Edit</button>
+              e.preventDefault();
+              setShowModalEmail(true);
+            }}>Edit</button>
           </div>
 
           {/* Shipping */}
@@ -387,10 +387,10 @@ const handleEmailChangeInput = (event) => {
               <p>{shippingInfo.address}</p>
               <p>{shippingInfo.city}, {shippingInfo.state} {shippingInfo.zipCode}</p>
             </div>
-            <button className="text-blue-500 underline"onClick={(e) => {
-                                    e.preventDefault();
-                                    setShowModalShipping(true);
-                                }}>Edit</button>
+            <button className="text-blue-500 underline" onClick={(e) => {
+              e.preventDefault();
+              setShowModalShipping(true);
+            }}>Edit</button>
           </div>
 
           {/* Pay With to */}
@@ -399,10 +399,10 @@ const handleEmailChangeInput = (event) => {
               <h2 className="text-lg font-bold mb-2">Pay With:</h2>
               <p>Card ending in {paymentInfo.cardNumber.toString().slice(-4)}</p>
             </div>
-            <button className="text-blue-500 underline"onClick={(e) => {
-                                    e.preventDefault();
-                                    setShowModalPayment(true);
-                                }}>Edit</button>
+            <button className="text-blue-500 underline" onClick={(e) => {
+              e.preventDefault();
+              setShowModalPayment(true);
+            }}>Edit</button>
           </div>
 
           {/* Billing to */}
@@ -414,9 +414,9 @@ const handleEmailChangeInput = (event) => {
               <p>{billingInfo.city}, {billingInfo.state} {billingInfo.zipCode}</p>
             </div>
             <button className="text-blue-500 underline" onClick={(e) => {
-                                    e.preventDefault();
-                                    setShowModalBilling(true);
-                                }}>Edit</button>
+              e.preventDefault();
+              setShowModalBilling(true);
+            }}>Edit</button>
           </div>
 
           <button className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mt-16" onClick={handleCheckout}>Place Order</button>
@@ -424,196 +424,196 @@ const handleEmailChangeInput = (event) => {
 
 
 
-       {/* Modal Start  *******************************************/}
-{showModalBilling ? (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-        <div className="bg-white border border-gray-300 rounded-lg p-8">
-            <h1 className="text-2xl font-bold mb-4">Billing Information</h1>
-            <form className="space-y-4" onSubmit={handleEditBillingInfo}>
+        {/* Modal Start  *******************************************/}
+        {showModalBilling ? (
+          <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+            <div className="bg-white border border-gray-300 rounded-lg p-8">
+              <h1 className="text-2xl font-bold mb-4">Billing Information</h1>
+              <form className="space-y-4" onSubmit={handleEditBillingInfo}>
                 <div className="flex space-x-4">
-                    <div className="flex flex-col flex-1">
-                        <label htmlFor="first_name" className="text-sm font-semibold mb-1">First Name</label>
-                        <input id="first_name" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your first name" onChange={handleBillingInputChange} name="firstName" required />
-                    </div>
-                    <div className="flex flex-col flex-1">
-                        <label htmlFor="last_name" className="text-sm font-semibold mb-1">Last Name</label>
-                        <input id="last_name" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your last name" onChange={handleBillingInputChange} name="lastName" required />
-                    </div>
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="first_name" className="text-sm font-semibold mb-1">First Name</label>
+                    <input id="first_name" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your first name" onChange={handleBillingInputChange} name="firstName" required />
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="last_name" className="text-sm font-semibold mb-1">Last Name</label>
+                    <input id="last_name" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your last name" onChange={handleBillingInputChange} name="lastName" required />
+                  </div>
                 </div>
                 <div className="flex flex-col">
-                    <label htmlFor="address" className="text-sm font-semibold mb-1">Address</label>
-                    <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your address" onChange={handleBillingInputChange} name="address" required />
+                  <label htmlFor="address" className="text-sm font-semibold mb-1">Address</label>
+                  <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your address" onChange={handleBillingInputChange} name="address" required />
                 </div>
                 <div className="flex flex-col">
-                    <label htmlFor="city" className="text-sm font-semibold mb-1">City</label>
-                    <input id="city" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your city" onChange={handleBillingInputChange} name="city" required />
+                  <label htmlFor="city" className="text-sm font-semibold mb-1">City</label>
+                  <input id="city" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your city" onChange={handleBillingInputChange} name="city" required />
                 </div>
                 <div className="flex space-x-4">
-                    <div className="flex flex-col flex-1">
-                        <label htmlFor="state" className="text-sm font-semibold mb-1">State</label>
-                        <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleBillingInputChange} name="state" required />
-                    </div>
-                    <div className="flex flex-col flex-1">
-                        <label htmlFor="zip_code" className="text-sm font-semibold mb-1">Zip Code</label>
-                        <input id="zip_code" type="number" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your zip code" value={billingInfo.zipCode} onChange={(e) => setBillingInfo({ ...billingInfo, zipCode: parseInt(e.target.value) })} name="zipCode" required />
-                    </div>
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="state" className="text-sm font-semibold mb-1">State</label>
+                    <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleBillingInputChange} name="state" required />
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="zip_code" className="text-sm font-semibold mb-1">Zip Code</label>
+                    <input id="zip_code" type="number" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your zip code" value={billingInfo.zipCode} onChange={(e) => setBillingInfo({ ...billingInfo, zipCode: parseInt(e.target.value) })} name="zipCode" required />
+                  </div>
                 </div>
                 {/* Add more form fields for shipping information as needed */}
                 <div className="flex justify-end">
-                    <button type='submit' className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Save Billing Address</button>
-                    <button onClick={handleCancelModalBilling} className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Cancel</button>
+                  <button type='submit' className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Save Billing Address</button>
+                  <button onClick={handleCancelModalBilling} className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Cancel</button>
                 </div>
-            </form>
-        </div>
-    </div>
-) : null}
-{/* Modal end *************************************************** */}
+              </form>
+            </div>
+          </div>
+        ) : null}
+        {/* Modal end *************************************************** */}
 
-{/* Modal Shipping Start  *******************************************/}
-{showModalShipping ? (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-        <div className="bg-white border border-gray-300 rounded-lg p-8">
-            <h1 className="text-2xl font-bold mb-4">Shipping Information</h1>
-            <form className="space-y-4" onSubmit={handleEditShippingInfo}>
+        {/* Modal Shipping Start  *******************************************/}
+        {showModalShipping ? (
+          <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+            <div className="bg-white border border-gray-300 rounded-lg p-8">
+              <h1 className="text-2xl font-bold mb-4">Shipping Information</h1>
+              <form className="space-y-4" onSubmit={handleEditShippingInfo}>
                 <div className="flex space-x-4">
-                    <div className="flex flex-col flex-1">
-                        <label htmlFor="first_name" className="text-sm font-semibold mb-1">First Name</label>
-                        <input id="first_name" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your first name" onChange={handleShippingInputChange} name="firstName" required />
-                    </div>
-                    <div className="flex flex-col flex-1">
-                        <label htmlFor="last_name" className="text-sm font-semibold mb-1">Last Name</label>
-                        <input id="last_name" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your last name" onChange={handleShippingInputChange} name="lastName" required />
-                    </div>
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="first_name" className="text-sm font-semibold mb-1">First Name</label>
+                    <input id="first_name" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your first name" onChange={handleShippingInputChange} name="firstName" required />
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="last_name" className="text-sm font-semibold mb-1">Last Name</label>
+                    <input id="last_name" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your last name" onChange={handleShippingInputChange} name="lastName" required />
+                  </div>
                 </div>
                 <div className="flex flex-col">
-                    <label htmlFor="address" className="text-sm font-semibold mb-1">Address</label>
-                    <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your address" onChange={handleShippingInputChange} name="address" required />
+                  <label htmlFor="address" className="text-sm font-semibold mb-1">Address</label>
+                  <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your address" onChange={handleShippingInputChange} name="address" required />
                 </div>
                 <div className="flex flex-col">
-                    <label htmlFor="city" className="text-sm font-semibold mb-1">City</label>
-                    <input id="city" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your city" onChange={handleShippingInputChange} name="city" required />
+                  <label htmlFor="city" className="text-sm font-semibold mb-1">City</label>
+                  <input id="city" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your city" onChange={handleShippingInputChange} name="city" required />
                 </div>
                 <div className="flex space-x-4">
-                    <div className="flex flex-col flex-1">
-                        <label htmlFor="state" className="text-sm font-semibold mb-1">State</label>
-                        <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleShippingInputChange} name="state" required />
-                    </div>
-                    <div className="flex flex-col flex-1">
-                        <label htmlFor="zip_code" className="text-sm font-semibold mb-1">Zip Code</label>
-                        <input id="zip_code" type="number" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your zip code" value={shippingInfo.zipCode} onChange={(e) => setShippingInfo({ ...shippingInfo, zipCode: parseInt(e.target.value) })} name="zipCode" required />
-                    </div>
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="state" className="text-sm font-semibold mb-1">State</label>
+                    <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleShippingInputChange} name="state" required />
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="zip_code" className="text-sm font-semibold mb-1">Zip Code</label>
+                    <input id="zip_code" type="number" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your zip code" value={shippingInfo.zipCode} onChange={(e) => setShippingInfo({ ...shippingInfo, zipCode: parseInt(e.target.value) })} name="zipCode" required />
+                  </div>
                 </div>
                 {/* Add more form fields for shipping information as needed */}
                 <div className="flex justify-end">
-                    <button type='submit' className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Save Shipping Address</button>
-                    <button onClick={handleCancelModalShipping} className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Cancel</button>
+                  <button type='submit' className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Save Shipping Address</button>
+                  <button onClick={handleCancelModalShipping} className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Cancel</button>
                 </div>
-            </form>
-        </div>
-    </div>
-) : null}
-{/* Modal end *************************************************** */}
+              </form>
+            </div>
+          </div>
+        ) : null}
+        {/* Modal end *************************************************** */}
 
-{/* Modal Payment Start  *******************************************/}
-{showModalPayment ? (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-        <div className="bg-white border border-gray-300 rounded-lg p-8">
-            <h1 className="text-2xl font-bold mb-4">Payment Information</h1>
-            <form onSubmit={handleEditPaymentInfo}className="space-y-4">
-                        <div className="flex flex-col">
-                            <label htmlFor="credit_card" className="text-sm font-semibold mb-1">
-                                Card Number
-                                <FontAwesomeIcon icon={faLock} className='ml-1' />
-                            </label>
-                            <input id="credit_card" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your card number"
-                                onChange={handlePaymentInputChange}
-                                name="cardNumber"
-                                required />
-                        </div>
-
-                        <div className="flex space-x-4">
-                            <div className="flex flex-col flex-1">
-                                <label htmlFor="exp_month" className="text-sm font-semibold mb-1">Expiration Month</label>
-                                <input id="exp_month" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="02"
-                                    onChange={handlePaymentInputChange}
-                                    name="expMonth"
-                                    required />
-                            </div>
-                            <div className="flex flex-col flex-1">
-                                <label htmlFor="exp year" className="text-sm font-semibold mb-1">Expiration Year</label>
-                                <input id="exp_year" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="2024"
-                                    onChange={handlePaymentInputChange}
-                                    name="expYear"
-                                    required />
-                            </div>
-
-
-                        </div>
-                        <div className="flex flex-col flex-1 mb-16">
-                            <label htmlFor="cvv" className="text-sm font-semibold mb-1">CVV</label>
-                            <input id="cvv" type="text" className="border border-gray-300 rounded-md py-2 px-3 w-1/2 focus:outline-none focus:border-blue-500" placeholder="Enter your last name"
-                                onChange={handlePaymentInputChange}
-                                name="cvv"
-                                required />
-                        </div>
-                {/* Add more form fields for shipping information as needed */}
-                <div className="flex justify-end">
-                    <button type = 'submit'  className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Save Changes</button>
-                    <button onClick={handleCancelModalPayment} className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-) : null}
-{/* Modal end *************************************************** */}
-
-{/* Modal Email Start  *******************************************/}
-{showModalEmail ? (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-        <div className="bg-white border border-gray-300 rounded-lg p-8">
-            <h1 className="text-2xl font-bold mb-4">Contact</h1>
-            <form onSubmit={handleEmailChange} className="space-y-4">
-                
+        {/* Modal Payment Start  *******************************************/}
+        {showModalPayment ? (
+          <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+            <div className="bg-white border border-gray-300 rounded-lg p-8">
+              <h1 className="text-2xl font-bold mb-4">Payment Information</h1>
+              <form onSubmit={handleEditPaymentInfo} className="space-y-4">
                 <div className="flex flex-col">
-                    <label htmlFor="address" className="text-sm font-semibold mb-1">email</label>
-                    <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your address" onChange={handleEmailChangeInput} name="email" required />
+                  <label htmlFor="credit_card" className="text-sm font-semibold mb-1">
+                    Card Number
+                    <FontAwesomeIcon icon={faLock} className='ml-1' />
+                  </label>
+                  <input id="credit_card" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your card number"
+                    onChange={handlePaymentInputChange}
+                    name="cardNumber"
+                    required />
                 </div>
-                
+
+                <div className="flex space-x-4">
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="exp_month" className="text-sm font-semibold mb-1">Expiration Month</label>
+                    <input id="exp_month" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="02"
+                      onChange={handlePaymentInputChange}
+                      name="expMonth"
+                      required />
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="exp year" className="text-sm font-semibold mb-1">Expiration Year</label>
+                    <input id="exp_year" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="2024"
+                      onChange={handlePaymentInputChange}
+                      name="expYear"
+                      required />
+                  </div>
+
+
+                </div>
+                <div className="flex flex-col flex-1 mb-16">
+                  <label htmlFor="cvv" className="text-sm font-semibold mb-1">CVV</label>
+                  <input id="cvv" type="text" className="border border-gray-300 rounded-md py-2 px-3 w-1/2 focus:outline-none focus:border-blue-500" placeholder="Enter your last name"
+                    onChange={handlePaymentInputChange}
+                    name="cvv"
+                    required />
+                </div>
                 {/* Add more form fields for shipping information as needed */}
                 <div className="flex justify-end">
-                    <button type='submit' className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Save Shipping Address</button>
-                    <button onClick={handleCancelModalEmail} className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Cancel</button>
+                  <button type='submit' className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Save Changes</button>
+                  <button onClick={handleCancelModalPayment} className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Cancel</button>
                 </div>
-            </form>
-        </div>
-    </div>
-) : null}
-{/* Modal end *************************************************** */}
+              </form>
+            </div>
+          </div>
+        ) : null}
+        {/* Modal end *************************************************** */}
+
+        {/* Modal Email Start  *******************************************/}
+        {showModalEmail ? (
+          <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+            <div className="bg-white border border-gray-300 rounded-lg p-8">
+              <h1 className="text-2xl font-bold mb-4">Contact</h1>
+              <form onSubmit={handleEmailChange} className="space-y-4">
+
+                <div className="flex flex-col">
+                  <label htmlFor="address" className="text-sm font-semibold mb-1">email</label>
+                  <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your address" onChange={handleEmailChangeInput} name="email" required />
+                </div>
+
+                {/* Add more form fields for shipping information as needed */}
+                <div className="flex justify-end">
+                  <button type='submit' className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Save Shipping Address</button>
+                  <button onClick={handleCancelModalEmail} className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        ) : null}
+        {/* Modal end *************************************************** */}
 
 
 
         {/* Order Summary */}
         <div className="bg-gray-100 rounded-lg p-6 mb-32 flex flex-col items-center justify-between w-64" style={{ maxHeight: '680px', overflowY: 'auto' }}>
 
-                    <h2 className="text-lg font-bold mb-4">Order Summary</h2>
-                    <div className="flex justify-between w-full mb-2">
-                        <div>Subtotal</div>
-                        <div>${totalPrice}</div>
-                    </div>
-                    <div className="flex justify-between w-full mb-2">
-                        <div>Shipping</div>
-                        <div>Free</div>
-                    </div>
-                    <div className="flex justify-between w-full mb-2">
-                        <div>Tax</div>
-                        <div>$0.00</div>
-                    </div>
-                    <div className="flex justify-between w-full mb-4">
-                        <div>Total</div>
-                        <div>${totalPrice}</div>
-                    </div>
+          <h2 className="text-lg font-bold mb-4">Order Summary</h2>
+          <div className="flex justify-between w-full mb-2">
+            <div>Subtotal</div>
+            <div>${totalPrice}</div>
+          </div>
+          <div className="flex justify-between w-full mb-2">
+            <div>Shipping</div>
+            <div>Free</div>
+          </div>
+          <div className="flex justify-between w-full mb-2">
+            <div>Tax</div>
+            <div>$0.00</div>
+          </div>
+          <div className="flex justify-between w-full mb-4">
+            <div>Total</div>
+            <div>${totalPrice}</div>
+          </div>
 
-                </div>
+        </div>
 
       </div>
     </div>

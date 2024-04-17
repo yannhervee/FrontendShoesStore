@@ -1,16 +1,262 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useRouter } from 'next/router';
+import { faLock } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
 
 const ProfilePage = () => {
+
+  const [shippingInfo, setShippingInfo] = useState({
+    firstName: '',
+    lastName: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: 0,
+  });
+  const [billingInfo, setBillingInfo] = useState({
+    firstName: '',
+    lastName: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: 0,
+  });
+  const [paymentInfo, setPaymentInfo] = useState({
+    cardNumber: '',
+    expMonth: '',
+    expYear: '',
+    cvv: '',
+  });
+  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+
+  const [showModalPayment, setShowModalPayment] = useState(false);
+  const [showModalShipping, setShowModalShipping] = useState(false);
+  
+  const [showModalEmail, setShowModalEmail] = useState(false);
+  const [showModalName, setShowModalName] = useState(false);
+
+
+
+
+  // useEffect(() => {
+  //   console.log("id", id)
+  //   const fetchProductDetails = async () => {
+  //     try {
+  //       const response = await axios.get(`http://localhost:8080/product/${id}`);
+  //       setProduct(response.data);
+
+  //       setCurrentImages(product.images); // Initial image set up
+
+  //       console.log("product", response.data);
+
+  //       // Set default selected size
+  //       if (response.data.sizeColorDTO.length > 0) {
+  //         setSelectedSize(response.data.sizeColorDTO[0].size.size);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching product details:', error);
+  //       setLoading(false);
+  //     }
+
+  //     fetch('http://localhost:8080/sizes')
+  //       .then(response => response.json())
+  //       .then(data => {
+  //         console.log("data for sizes", data);
+  //         setAvailableSizes(data)
+  //       })
+  //       .catch(error => console.error('Failed to load sizes:', error));
+
+  //     // Fetch colors
+  //     fetch('http://localhost:8080/colors')
+  //       .then(response => response.json())
+  //       .then(data => {
+  //         console.log("data for colors", data);
+  //         setAvailableColors(data)
+  //       })
+  //       .catch(error => console.error('Failed to load colors:', error));
+  //   };
+
+  //   if (id) {
+  //     fetchProductDetails();
+  //   }
+  //   setLoading(false);
+  // }, [id]);
+
+    // Function to handle shipping input changes
+    const handleShippingInputChange = (e) => {
+      const { name, value } = e.target;
+      setShippingInfo({ ...shippingInfo, [name]: value });
+    };
+
+      
+       // Function to handle billing input changes
+  const handleBillingInputChange = (e) => {
+    const { name, value } = e.target;
+    setBillingInfo({ ...billingInfo, [name]: value });
+  };
+
+
+  // Function to handle shipping input changes
+  const handlePaymentInputChange = (e) => {
+    const { name, value } = e.target;
+
+    // Check if the value is numeric
+    if (!isNaN(value) && value.trim() !== "") {
+      // Convert the values to the correct type before updating the state
+      const parsedValue = name === 'cardNumber' || name === 'expMonth' || name === 'expYear' || name === 'cvv' ? parseInt(value) : value;
+      setPaymentInfo({ ...paymentInfo, [name]: parsedValue });
+    } else {
+      // Display an alert to the user
+      alert('Please enter numeric values for card number, expiration month, expiration year, and CVV.');
+      e.target.value = '';
+    }
+  };
+
+
+  //submit name change to backend
+  const handleNameChange = (e) => {
+     
+    e.preventDefault();
+    console.log('Edit name');
+    // console.log("modal", showModalEmail)
+    console.log("updated Fname is", firstName)
+    console.log("updated Lname is", lastName)
+
+    setShowName(false);
+
+  };
+
+  // Function to handle the edit email change
+  const handleEmailChange = (e) => {
+    
+    e.preventDefault();
+    console.log('Edit email');
+    console.log("modal", showModalEmail)
+    console.log("updated email is", email)
+
+    setShowModalEmail(false);
+
+  };
+
+  // Function to handle the edit shiiping information action
+  const handleEditPaymentInfo = () => {
+    // Implement modal logic to edit billing information
+    console.log('Edit payment information');
+    console.log("updated payment is", paymentInfo)
+    console.log("updated billing is", billingInfo)
+    setBillingInfo(billingInfo);
+    
+    setPaymentInfo(paymentInfo);
+
+    setShowModalPayment(false);
+
+  };
+
+  // Function to handle the edit shiiping information action
+  const handleEditShippingInfo = () => {
+    // Implement modal logic to edit billing information
+    console.log('Edit shipping information');
+    console.log("updated shipping is", shippingInfo)
+ 
+    setShippingInfo(shippingInfo);
+
+    setShowModalShipping(false);
+
+  };
+
+
+  const handleCancelModalPayment = () => {
+    // Implement modal logic to edit billing information
+  
+
+  
+      // setBillingInfo({
+      //   firstName: billing.firstName,
+      //   lastName: billing.lastName,
+      //   address: billing.address,
+      //   city: billing.city,
+      //   state: billing.state,
+      //   zipCode: billing.zipCode,
+      // });
+    
+    console.log("Billing info cancel", billingInfo);
+    setShowModalPayment(false);
+
+  };
+
+
+  //cancel shipping modal
+  const handleCancelModalShipping = () => {
+
+    console.log("Handling cancellation of shipping info form");
+    
+  
+      // setShippingInfo({
+      //   firstName: shipping.firstName,
+      //   lastName: shipping.lastName,
+      //   address: shipping.address,
+      //   city: shipping.city,
+      //   state: shipping.state,
+      //   zipCode: shipping.zipCode,
+      // })
+    
+    console.log("Shipping info cancel", shippingInfo);
+    setShowModalShipping(false);
+
+  };
+
+  // cancel modal email
+  const handleCancelModalEmail = () => {
+    // Implement modal logic to edit billing information
+    console.log('same email');
+
+    console.log("Handling cancellation of email");
+    // const em = localStorage.getItem('email');
+    // if (em) {
+    //   setEmail(em)
+    // }
+    // console.log("email", email);
+
+    setShowModalEmail(false);
+
+  };
+
+   // cancel modal name
+   const handleCancelModalName = () => {
+    // Implement modal logic to edit billing information
+    console.log('same email');
+
+    console.log("Handling cancellation of name");
+    // const em = localStorage.getItem('email');
+    // if (em) {
+    //   setEmail(em)
+    // }
+    // console.log("email", email);
+
+    setShowModalName(false);
+
+  };
+
+
+
+
+
   return (
     <div className="bg-gray-200 min-h-screen p-8">
+
       <div className="max-w-6xl mx-auto shadow-lg rounded-lg overflow-hidden md:flex md:space-x-4 bg-gray-200">
-        
+
         {/* Left Section with Welcome Message */}
         <div className="md:w-1/2 bg-green-500 p-8 text-white flex items-center mr-4">
           <div>
             <h2 className="text-2xl font-bold mb-4">Welcome Back, Yann!</h2>
             <p>
-            Thank you for joining us in our mission to redefine fashion and pave the way towards a more sustainable future. By choosing our eco-friendly lady shoes, you're not only making a style statement but also contributing to positive change for our planet. Together, we're stepping towards a greener tomorrow, one stylish stride at a time. Your support means the world to us as we continue to innovate, inspire, and lead the way in ethical fashion. Here's to walking hand in hand towards a brighter, more sustainable future. Thank you for being a part of our journey!
+              Thank you for joining us in our mission to redefine fashion and pave the way towards a more sustainable future. By choosing our eco-friendly lady shoes, you're not only making a style statement but also contributing to positive change for our planet. Together, we're stepping towards a greener tomorrow, one stylish stride at a time. Your support means the world to us as we continue to innovate, inspire, and lead the way in ethical fashion. Here's to walking hand in hand towards a brighter, more sustainable future. Thank you for being a part of our journey!
               {/* Full message here */}
             </p>
           </div>
@@ -18,56 +264,252 @@ const ProfilePage = () => {
 
         {/* Right Section with User Information */}
         <div className="md:w-1/2 p-8 bg-white border-l border-black">
-          { /* Each Subpart with Border and Edit Button at the Right End */ }
+          { /* Each Subpart with Border and Edit Button at the Right End */}
           <div className="flex justify-between items-center border-b pb-4 ">
             <div>
               <h3 className="font-bold text-xl mb-2">About Me</h3>
               <p className="text-grey-800">Yann Animan</p>
             </div>
-            <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded">Edit</button>
+            <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded"
+            onClick={(e) => {
+              e.preventDefault();
+              setShowModalName(true);
+            }}>Edit</button>
           </div>
-          
+
           <div className="flex justify-between items-center border-b py-4">
             <div>
               <h3 className="font-bold text-xl mb-2">Contact</h3>
               <p className="text-grey-800 font-bold text-green-600 text-l">Email Address</p>
               <p className="text-grey-800 mb-2">Yann@email.com</p>
-              <p className="text-grey-800 font-bold text-green-600 text-l">Phone</p>
-              <p className="text-grey-800 mb-2">5287965847</p>
-              <p className="text-grey-800 font-bold text-green-600 text-l">Mailing Address</p>
-              <p className="text-grey-800">Yann Animan</p>
-              
-              <p className="text-grey-800">123 Street Dr Denver</p>
-              <p className="text-grey-800 mb-2">VA 20001</p>
-              
+            
+
             </div>
-            <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded">Edit</button>
+            <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded"
+            onClick={(e) => {
+              e.preventDefault();
+              setShowModalEmail(true);
+            }}
+            >Edit</button>
           </div>
-          
+
           <div className="flex justify-between items-center border-b py-4">
             <div>
               <h3 className="font-bold text-xl mb-2">Shipping Address</h3>
-             
+
               <p className="text-grey-800">Yann Animan</p>
-              
+
               <p className="text-grey-800">123 Street Dr Denver</p>
               <p className="text-grey-800">VA 20001</p>
             </div>
-            <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded">Edit</button>
+            <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded"
+            onClick={(e) => {
+              e.preventDefault();
+              setShowModalShipping(true);
+            }}>Edit</button>
           </div>
-          
+
           <div className="flex justify-between items-center pt-4">
             <div>
               <h3 className="font-bold text-xl mb-2">Saved Card</h3>
               <p className="text-grey-800">Card Number: ****-****-****-67</p>
               <p className="text-grey-800">Yann Animan</p>
-              
+
               <p className="text-grey-800">123 Street Dr Denver</p>
               <p className="text-grey-800">VA 20001</p>
             </div>
-            <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded">Edit</button>
+            <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded"
+            onClick={(e) => {
+              e.preventDefault();
+              setShowModalPayment(true);
+            }}>Edit</button>
           </div>
         </div>
+
+
+        {/* Modal Shipping Start  *******************************************/}
+        {showModalShipping ? (
+          <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+            <div className="bg-white border border-gray-300 rounded-lg p-8">
+              <h1 className="text-2xl font-bold mb-4">Shipping Information</h1>
+              <form className="space-y-4" onSubmit={handleEditShippingInfo}>
+                <div className="flex space-x-4">
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="first_name" className="text-sm font-semibold mb-1">First Name</label>
+                    <input id="first_name" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your first name" onChange={handleShippingInputChange} name="firstName" required />
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="last_name" className="text-sm font-semibold mb-1">Last Name</label>
+                    <input id="last_name" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your last name" onChange={handleShippingInputChange} name="lastName" required />
+                  </div>
+                </div>
+                <div className="flex flex-col">
+                  <label htmlFor="address" className="text-sm font-semibold mb-1">Address</label>
+                  <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your address" onChange={handleShippingInputChange} name="address" required />
+                </div>
+                <div className="flex flex-col">
+                  <label htmlFor="city" className="text-sm font-semibold mb-1">City</label>
+                  <input id="city" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your city" onChange={handleShippingInputChange} name="city" required />
+                </div>
+                <div className="flex space-x-4">
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="state" className="text-sm font-semibold mb-1">State</label>
+                    <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleShippingInputChange} name="state" required />
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="zip_code" className="text-sm font-semibold mb-1">Zip Code</label>
+                    <input id="zip_code" type="number" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your zip code" value={shippingInfo.zipCode} onChange={(e) => setShippingInfo({ ...shippingInfo, zipCode: parseInt(e.target.value) })} name="zipCode" required />
+                  </div>
+                </div>
+                {/* Add more form fields for shipping information as needed */}
+                <div className="flex justify-end">
+                  <button type='submit' className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Save Shipping Address</button>
+                  <button onClick={handleCancelModalShipping} className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        ) : null}
+        {/* Modal end *************************************************** */}
+
+        {/* Modal Email Start  *******************************************/}
+        {showModalEmail ? (
+          <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+            <div className="bg-white border border-gray-300 rounded-lg p-8">
+              <h1 className="text-2xl font-bold mb-4">Contact</h1>
+              <form onSubmit={handleEmailChange} className="space-y-4">
+
+                <div className="flex flex-col">
+                  <label htmlFor="address" className="text-sm font-semibold mb-1">email</label>
+                  <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your address" onChange={(e) => setEmail(e.target.value)} name="email" required />
+                </div>
+
+                {/* Add more form fields for shipping information as needed */}
+                <div className="flex justify-end">
+                  <button type='submit' className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Save Shipping Address</button>
+                  <button onClick={handleCancelModalEmail} className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        ) : null}
+        {/* Modal end *************************************************** */}
+
+        {/* Modal Name Start  *******************************************/}
+        {showModalName ? (
+          <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+            <div className="bg-white border border-gray-300 rounded-lg p-8">
+              <h1 className="text-2xl font-bold mb-4">Contact</h1>
+              <form onSubmit={handleNameChange} className="space-y-4">
+
+                <div className="flex flex-col">
+                  <label htmlFor="first" className="text-sm font-semibold mb-1">Firstname</label>
+                  <input id="first" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter FirstName" onChange={(e) => setFirstName(e.target.value)} name="firstName" required />
+                </div>
+                <div className="flex flex-col">
+                  <label htmlFor="last" className="text-sm font-semibold mb-1">Lastname</label>
+                  <input id="last" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter LastName" onChange={(e) => setLastName(e.target.value)} name="lastName" required />
+                </div>
+
+                {/* Add more form fields for shipping information as needed */}
+                <div className="flex justify-end">
+                  <button type='submit' className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Save Name</button>
+                  <button onClick={handleCancelModalName} className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        ) : null}
+        {/* Modal end *************************************************** */}
+
+        {/* Modal Payment Start  *******************************************/}
+        {showModalPayment ? (
+          <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+            <div className="bg-white border border-gray-300 rounded-lg p-8">
+              <h1 className="text-2xl font-bold mb-4">Payment Information</h1>
+              <form onSubmit={handleEditPaymentInfo} className="space-y-4">
+                <div className="flex flex-col">
+                  <label htmlFor="credit_card" className="text-sm font-semibold mb-1">
+                    Card Number
+                    <FontAwesomeIcon icon={faLock} className='ml-1' />
+                  </label>
+                  <input id="credit_card" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your card number"
+                    onChange={handlePaymentInputChange}
+                    name="cardNumber"
+                    required />
+                </div>
+
+                <div className="flex space-x-4">
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="exp_month" className="text-sm font-semibold mb-1">Expiration Month</label>
+                    <input id="exp_month" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="02"
+                      onChange={handlePaymentInputChange}
+                      name="expMonth"
+                      required />
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="exp year" className="text-sm font-semibold mb-1">Expiration Year</label>
+                    <input id="exp_year" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="2024"
+                      onChange={handlePaymentInputChange}
+                      name="expYear"
+                      required />
+                  </div>
+
+
+                </div>
+                <div className="flex flex-col flex-1 mb-16">
+                  <label htmlFor="cvv" className="text-sm font-semibold mb-1">CVV</label>
+                  <input id="cvv" type="text" className="border border-gray-300 rounded-md py-2 px-3 w-1/2 focus:outline-none focus:border-blue-500" placeholder="Enter your last name"
+                    onChange={handlePaymentInputChange}
+                    name="cvv"
+                    required />
+                </div>
+                <div className="flex space-x-4">
+
+          {/******************************  Billing part ****************************** */}
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="first_name" className="text-sm font-semibold mb-1">First Name</label>
+                    <input id="first_name" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your first name" onChange={handleBillingInputChange} name="firstName" required />
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="last_name" className="text-sm font-semibold mb-1">Last Name</label>
+                    <input id="last_name" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your last name" onChange={handleBillingInputChange} name="lastName" required />
+                  </div>
+                </div>
+                <div className="flex flex-col">
+                  <label htmlFor="address" className="text-sm font-semibold mb-1">Address</label>
+                  <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your address" onChange={handleBillingInputChange} name="address" required />
+                </div>
+                <div className="flex flex-col">
+                  <label htmlFor="city" className="text-sm font-semibold mb-1">City</label>
+                  <input id="city" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your city" onChange={handleBillingInputChange} name="city" required />
+                </div>
+                <div className="flex space-x-4">
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="state" className="text-sm font-semibold mb-1">State</label>
+                    <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleBillingInputChange} name="state" required />
+                  </div>
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="zip_code" className="text-sm font-semibold mb-1">Zip Code</label>
+                    <input id="zip_code" type="number" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your zip code" value={billingInfo.zipCode} onChange={(e) => setBillingInfo({ ...billingInfo, zipCode: parseInt(e.target.value) })} name="zipCode" required />
+                  </div>
+                </div>
+
+
+                {/* Add more form fields for shipping information as needed */}
+                <div className="flex justify-end">
+                  <button type='submit' className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Save Changes</button>
+                  <button onClick={handleCancelModalPayment} className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        ) : null}
+        {/* Modal end *************************************************** */}
+
+
+
+
 
       </div>
     </div>
