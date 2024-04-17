@@ -53,6 +53,8 @@ const removeFromCart = (productId, sizeId, colorId) => {
       quantity: item.quantity
     }));
     localStorage.setItem('shopping_cart', JSON.stringify(updatedLocalStorageCart));
+    // Manually trigger an update to context if in the same tab
+    window.dispatchEvent(new Event('storage'));
   };
   
 

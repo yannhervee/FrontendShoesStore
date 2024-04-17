@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import ImageSlider from '@/components/imageSlider';
+import { useCart } from '@/components/cartContext';
 
 
 const ProductDetailsPage = () => {
@@ -12,6 +13,7 @@ const ProductDetailsPage = () => {
   const [availableSizes, setAvailableSizes] = useState([]);
   const [availableColors, setAvailableColors] = useState([]);
   const [currentImages, setCurrentImages] = useState([]);
+  const { updateCart } = useCart();
 
 
 
@@ -137,6 +139,7 @@ const ProductDetailsPage = () => {
 
       // Save updated cart to local storage
       localStorage.setItem('shopping_cart', JSON.stringify(cart));
+      updateCart(cart); 
       router.push("/cart");
     } catch (error) {
       console.error('Error adding item to cart:', error);
