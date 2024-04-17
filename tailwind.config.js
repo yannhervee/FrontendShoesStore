@@ -16,10 +16,16 @@ module.exports = {
       width: {
         '512': '512px',  // Key can be any name, but using the pixel value helps remember what it does
         '150': '150px',
+        '250': '250px',
+        
       },
       height: {
         '512': '512px',  // Key can be any name, but using the pixel value helps remember what it does
         '150': '150px',
+        '250': '250px',
+      },
+      backgroundImage: {
+        'my-image': "url('/logo.png')"
       },
     },
   },

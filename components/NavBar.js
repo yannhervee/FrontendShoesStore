@@ -12,7 +12,7 @@ const NavBar = () => {
   const { id } = router.query;
 
   useEffect(() => {
-    axios.get("http://localhost:3001/categories")
+    axios.get("http://localhost:8080/category")
       .then((res) => {
         setCategories(res.data);
         setLoading(false);
@@ -84,9 +84,9 @@ const NavBar = () => {
             /* Render category links once categories are loaded */
             categories.map((category, index) => (
               <div key={index} className="mx-4">
-                <Link href={`/category/${category.id}`} passHref={true}>
-                <span className={id == category.id ? 'text-green-600 bg-white px-4 py-2' : 'hover:underline'}>
-                    {category.name}
+                <Link href={`/category/${category.categoryID}`} passHref={true}>
+                <span className={id == category.categoryID ? 'text-green-600 bg-white px-4 py-2' : 'hover:underline'}>
+                    {category.category}
                   </span>
                 </Link>
               </div>

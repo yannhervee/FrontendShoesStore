@@ -3,6 +3,7 @@ import LeftMenu from "@/components/leftMenu";
 import axios from "axios";
 import Link from "next/link";
 
+
 const Products = () => {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
@@ -81,8 +82,11 @@ const Products = () => {
           ) : (
              filteredProducts.map((product) => (
               <Link key={product.productId} href={`/products/${product.productId}`} passHref>
-              <div key={product.productId} className="bg-blue-500 p-4 rounded-md overflow-hidden block">
-                <div className="h-32 w-full bg-blue-700 mb-4"></div>
+              <div key={product.productId} className="bg-green-500 p-4 rounded-md overflow-hidden block">
+                <div className="h-250 w-full mb-4">
+                <img src={product.image.url} alt={"shoes image"} className="w-full h-full object-contain rounded-lg mb-4" />
+                  
+                </div>
                 <p className="text-white font-bold text-lg">{product.name}</p>
                 <p className="text-gray-300">{product.category}</p>
                 <p className="text-green-400 font-bold">${product.price}</p>

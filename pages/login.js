@@ -11,8 +11,8 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-green-500 pr-20">
-      <div className="max-w-md w-full space-y-8 p-10 bg-white rounded-l-xl shadow-lg z-10">
+    <div className="min-h-screen flex items-center justify-center bg-my-image pr-20">
+      <div className="max-w-md w-full space-y-8 p-10 bg-white rounded-l-xl shadow-lg z-10 ml-96">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
             Welcome Back!

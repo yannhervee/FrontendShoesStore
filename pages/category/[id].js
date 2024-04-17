@@ -21,7 +21,7 @@ const ProductByCategory = () => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`http://localhost:3001/products/category/${id}`);
+        const response = await axios.get(`http://localhost:8080/productByCategory/${id}`);
         setProducts(response.data);
         console.log(response.data)
         setFilteredProducts(response.data);
@@ -51,8 +51,17 @@ const ProductByCategory = () => {
             return selectedValues.some((size) => product.sizes.includes(parseInt(size)));
           }
           if (type === "color" && selectedValues.length > 0) {
-            return selectedValues.some((color) => product.color_names.includes(color));
-          }
+            // console.log("Selected Colors:", selectedValues);
+            // console.log("Product Colors:", product.color_names);
+        
+            return selectedValues.some((selectedColor) =>
+                product.color_names.some((productColor) =>
+                    productColor.toLowerCase() === selectedColor.toLowerCase()
+                )
+            );
+        }
+        
+        
           if (type === "priceRange" && selectedValues.length > 0) {
             return selectedValues.some((priceRange) => {
               const [minStr, maxStr] = priceRange.split(" - ");
@@ -69,29 +78,36 @@ const ProductByCategory = () => {
     setFilteredProducts(filtered);
   };
 
+
   return (
-    <div className="container mx-auto mt-8 flex">
-      <LeftMenu filters={filters} onFilterChange={handleFilterChange} />
-      <div className="flex-1 ml-4">
-        <h1 className="text-3xl font-bold mb-4">Women’s Eco Friendly Shoes</h1>
+    <div className="container mx-auto mt-8 flex ml-0">
+    <LeftMenu onFilterChange={handleFilterChange} />
+    <div className="flex-1 ml-4 mr-4, ml-32">
+      <h1 className="text-3xl font-bold mb-4">Women’s Eco Friendly Shoes</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {loading ? (
-          <p>Loading...</p>
+          <div>Loading...</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredProducts.map((product) => (
-              <Link key={product.id} href={`/products/${product.id}`} passHref>
-                <div key={product.id} className="bg-blue-500 p-4 rounded-md overflow-hidden block">
-                  <div className="h-32 w-full bg-blue-700 mb-4"></div>
-                  <p className="text-white font-bold text-lg">{product.name}</p>
-                  <p className="text-gray-300">{product.category_name}</p>
-                  <p className="text-green-400 font-bold">${product.price}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
+           filteredProducts.map((product) => (
+            <Link key={product.productId} href={`/products/${product.productId}`} passHref>
+            <div key={product.productId} className="bg-green-500 p-4 rounded-md overflow-hidden block">
+              <div className="h-250 w-full mb-4">
+              <img src={product.image.url} alt={"shoes image"} className="w-full h-full object-contain rounded-lg mb-4" />
+                
+              </div>
+              <p className="text-white font-bold text-lg">{product.name}</p>
+              <p className="text-gray-300">{product.category}</p>
+              <p className="text-green-400 font-bold">${product.price}</p>
+            </div>
+            </Link>
+          ))
+
+          
         )}
+      
       </div>
     </div>
+  </div>
   );
 };
 
