@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useRouter } from 'next/router';
 import ImageSlider from '@/components/imageSlider';
 
+
 const ProductDetailsPage = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -10,25 +11,13 @@ const ProductDetailsPage = () => {
   const [selectedColor, setSelectedColor] = useState(null);
   const [availableSizes, setAvailableSizes] = useState([]);
   const [availableColors, setAvailableColors] = useState([]);
-  const tempImages = [
-    '/img1.png',
-    '/img2.png',
-    '/img3.png'
-  ];
+  const [currentImages, setCurrentImages] = useState([]);
+
 
 
   const router = useRouter();
   const { id } = router.query; // Get the product ID from the URL
-  const productDetails = {
 
-    // Additional product images
-    additionalImages: [
-      "https://via.placeholder.com/150",
-      "https://via.placeholder.com/150",
-      "https://via.placeholder.com/150",
-      // Add more image URLs as needed
-    ],
-  };
 
   useEffect(() => {
     console.log("id", id)
@@ -36,6 +25,9 @@ const ProductDetailsPage = () => {
       try {
         const response = await axios.get(`http://localhost:8080/product/${id}`);
         setProduct(response.data);
+       
+        setCurrentImages(product.images); // Initial image set up
+        
         console.log("product", response.data);
 
         // Set default selected size
@@ -79,11 +71,23 @@ const ProductDetailsPage = () => {
   const handleSizeClick = (size) => {
     setSelectedSize(size);
     setSelectedColor(null); // Reset selected color when size changes
+    setCurrentImages(product.images); // Revert to showing all or default images
   };
 
   const handleColorClick = (color) => {
     setSelectedColor(color);
+    // Filter images based on selected color
+    const filteredImages = product.images.filter(image =>
+      image.url.toLowerCase().includes(color.color.toLowerCase())
+    );
+    // Assuming ImageSlider accepts images as a prop and can rerender based on this
+    setCurrentImages(filteredImages);
   };
+
+  const handlePreview = (image) => {
+    setCurrentImages([image]); // Temporarily set the main slider to show this image only
+  };
+  
 
   const handleAddToCart = async (event) => {
     event.preventDefault();
@@ -181,19 +185,23 @@ const ProductDetailsPage = () => {
           ))}
         </div> */}
 
-        <div className="flex flex-col items-center mr-8 w-150 h-150">
-
-{product.images.map((image, index) => (
-  
-  <img key={index} src={image.url} alt={`Product ${index}`} className="rounded-lg mb-4" />
-))}
+<div className="flex flex-col items-center mr-8 w-150 h-150">
+  {product.images.map((image, index) => (
+    <img key={index} 
+         src={image.url} 
+         alt={`Product ${index}`} 
+         className="rounded-lg mb-4 cursor-pointer"
+         onClick={() => handlePreview(image)}
+         onMouseLeave={() => setCurrentImages(product.images)} // Optional: revert on mouse leave
+    />
+  ))}
 </div>
         
 
         {/* Main Product Image */}
         <div class="relative p-0 w-512 mr-24">
           {/* <img src="https://via.placeholder.com/400" alt="Main product" className="w-full rounded-lg mb-4" /> */}
-          <ImageSlider images={product.images} className="w-full rounded-lg mb-4" />
+          <ImageSlider images={currentImages} className="w-full rounded-lg mb-4" />
 
 
           {/* Left arrow */}
