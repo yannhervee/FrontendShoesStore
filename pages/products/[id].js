@@ -184,6 +184,7 @@ const ProductDetailsPage = () => {
             <img key={index} src={image} alt={`Product ${index}`} className="rounded-lg mb-4" />
           ))}
         </div> */}
+        
 
 <div className="flex flex-col items-center mr-8 w-150 h-150">
   {product.images.map((image, index) => (

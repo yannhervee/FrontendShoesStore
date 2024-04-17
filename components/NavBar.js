@@ -34,7 +34,7 @@ const NavBar = () => {
         <div className="flex items-center">
           {/* Website Name */}
           <div className="text-2xl font-bold">
-            <Link href="/">
+            <Link href="/productListing">
               <span className="text-green-800">Eco Friendly Shoes</span>
             </Link>
           </div>
