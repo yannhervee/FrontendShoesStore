@@ -7,12 +7,12 @@ const LoginPage = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log('Login submitted for:', email);
-    // You would add login logic here
+    // Implement your login logic here
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-my-image pr-20">
-      <div className="max-w-md w-full space-y-8 p-10 bg-white rounded-l-xl shadow-lg z-10 ml-96">
+    <div className="min-h-screen flex items-center justify-center bg-green-400">
+      <div className="max-w-md w-full space-y-8 p-10 bg-white rounded-xl shadow-lg">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
             Welcome Back!
@@ -22,32 +22,35 @@ const LoginPage = () => {
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <input type="hidden" name="remember" defaultValue="true" />
-          <div className="rounded-md shadow-sm">
+          <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email-address" className="sr-only">Email address</label>
+              <label htmlFor="email-address" className="block text-sm font-medium text-black">
+                Email address
+              </label>
               <input
                 id="email-address"
                 name="email"
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-black placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                placeholder="Email address"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-black placeholder-gray-500 text-black rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm mb-4"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="mt-4">
-              <label htmlFor="password" className="sr-only">Password</label>
+              <label htmlFor="password" className="block text-sm font-medium text-black">
+                Password
+              </label>
               <input
                 id="password"
                 name="password"
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-black placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                placeholder="Password"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-black placeholder-gray-500 text-black rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm "
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -56,7 +59,7 @@ const LoginPage = () => {
 
           <div className="flex items-center justify-between">
             <div className="text-sm">
-              <a href="#" className="font-medium text-green-600 hover:text-green-500 mt-0">
+              <a href="#" className="font-medium text-green-600 hover:text-green-500">
                 Forgot your password?
               </a>
             </div>

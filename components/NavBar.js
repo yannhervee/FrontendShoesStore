@@ -10,21 +10,19 @@ const NavBar = () => {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const router = useRouter();
-  const { id } = router.query;
 
   useEffect(() => {
     axios.get("http://localhost:8080/category")
       .then((res) => {
         setCategories(res.data);
         setLoading(false);
-        
       })
       .catch((error) => {
         console.error("Error fetching categories:", error);
         setLoading(false);
       });
   }, []);
-  console.log("id ", id);
+
   const { cartItems } = useCart();
   const cartItemCount = cartItems.length;
 
@@ -51,9 +49,7 @@ const NavBar = () => {
           <div className="mr-4">
             <Link href="/login" className="hover:underline">
               <FontAwesomeIcon icon={faUser} className="mr-2" />
-                <span>
-                Sign In
-              </span>
+              <span>Sign In</span>
             </Link>
           </div>
 
@@ -67,18 +63,18 @@ const NavBar = () => {
           </div>
         </div>
       </div>
-       {/* Second Navigation Bar */}
-       <nav className="bg-green-600 text-white">
+      {/* Second Navigation Bar */}
+      <nav className="bg-green-600 text-white">
         <div className="container mx-auto flex justify-center p-2">
           {/* Check if categories are still loading */}
           {loading ? (
             <div>Loading...</div>
           ) : (
             /* Render category links once categories are loaded */
-            categories.map((category, index) => (
-              <div key={index} className="mx-4">
-                <Link href={`/category/${category.categoryID}`} passHref={true}>
-                <span className={id == category.categoryID ? 'text-green-600 bg-white px-4 py-2' : 'hover:underline'}>
+            categories.map((category) => (
+              <div key={category.categoryID} className="mx-4">
+                <Link href={`/category/${category.categoryID}`} passHref>
+                  <span className={router.pathname.includes('category') && router.query.id == category.categoryID ? 'text-green-600 bg-white px-4 py-2' : 'hover:underline'}>
                     {category.category}
                   </span>
                 </Link>
