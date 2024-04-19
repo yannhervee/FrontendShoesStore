@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/router';
 
 const CheckOrderPage = () => {
   const [orderNumber, setOrderNumber] = useState('');
+  const router = useRouter();
 
   const handleOrderLookup = (e) => {
     e.preventDefault();
     // Implement order lookup logic here
+    router.push({
+      pathname: '/orderdetail',
+      query: { orderNumber: orderNumber }, // Pass as a query param
+    });
     console.log('Looking up order:', orderNumber);
   };
 
+  
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#10B981' }}>
       <div className="max-w-md w-full bg-white p-8 border border-gray-200 rounded-lg shadow-md">

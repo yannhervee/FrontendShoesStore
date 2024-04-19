@@ -2,11 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 const OrderConfirmationPage = () => {
-  // Placeholder data - replace with real data
-  const orderDetails = {
-    orderNumber: '123ABC456',
-    estimatedDelivery: 'April 14, 2024',
-  };
+ 
   const router = useRouter();
   // Retrieve the order confirmation number from the query parameters
   const { orderNumber } = router.query;
