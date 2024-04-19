@@ -11,10 +11,10 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-green-400">
-      <div className="max-w-md w-full space-y-8 p-10 bg-white rounded-xl shadow-lg">
+    <div className="min-h-screen flex items-center justify-center bg-my-image">
+      <div className="max-w-md w-full space-y-8 p-10 bg-white rounded-xl shadow-lg ml-96">
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+          <h2 className="mt-6 text-3xl font-bold text-green-600">
             Welcome Back!
           </h2>
           <p className="mt-2 text-sm text-gray-600">
@@ -75,7 +75,7 @@ const LoginPage = () => {
           </div>
 
           <div className="text-center mt-6">
-            <a href="/signup" className="font-medium text-green-600 hover:text-green-700">
+            <a href="/register" className="font-medium text-green-600 hover:text-green-700">
               Not a member? Sign up
             </a>
           </div>

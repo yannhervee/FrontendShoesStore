@@ -28,13 +28,19 @@ const NavBar = () => {
 
   return (
     <header className="bg-white text-black">
-      <div className="container mx-auto flex justify-between items-center p-4">
+      <div className="container ml-8 mr-16 flex justify-between items-center p-4">
         <div className="flex items-center">
-          <div className="text-2xl font-bold">
-            <Link href="/productListing">
-              <span className="text-green-800">Eco Friendly Shoes</span>
-            </Link>
+          
+          {/* Image and Title within the same flex container */}
+          <div className="flex items-center mr-4">
+            <img src="/ecoTrans.png" alt="Eco Friendly Shoes" className="w-10 h-10"></img> {/* Ensure you add alt text for accessibility */}
+            <div className="text-2xl font-bold">
+              <Link href="/productListing">
+                <span className="text-green-800">Eco Friendly Shoes</span>
+              </Link>
+            </div>
           </div>
+          
           <div className="ml-4">
             <input
               type="text"
@@ -63,14 +69,13 @@ const NavBar = () => {
           </div>
         </div>
       </div>
+
       {/* Second Navigation Bar */}
       <nav className="bg-green-600 text-white">
         <div className="container mx-auto flex justify-center p-2">
-          {/* Check if categories are still loading */}
           {loading ? (
             <div>Loading...</div>
           ) : (
-            /* Render category links once categories are loaded */
             categories.map((category) => (
               <div key={category.categoryID} className="mx-4">
                 <Link href={`/category/${category.categoryID}`} passHref>
@@ -85,6 +90,7 @@ const NavBar = () => {
       </nav>
     </header>
   );
+
 };
 
 export default NavBar;
