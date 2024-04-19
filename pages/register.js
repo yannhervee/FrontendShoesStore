@@ -76,10 +76,10 @@ const RegistrationPage = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-green-400">
-            <div className="max-w-md w-full space-y-8 p-10 bg-white rounded-xl shadow-lg">
+        <div className="min-h-screen flex items-center justify-center bg-my-image">
+            <div className="max-w-md w-full space-y-8 p-10 bg-white rounded-xl shadow-lg ml-96">
                 <div className="text-center">
-                    <h2 className="mt-6 text-3xl font-bold text-gray-900">
+                    <h2 className="mt-6 text-3xl font-bold text-gray-900 text-green-600">
                         Create Your Account
                     </h2>
                     <p className="mt-2 text-sm text-gray-600">
@@ -97,7 +97,7 @@ const RegistrationPage = () => {
                                 name="firstName"
                                 type="text"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-black placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm mb-4"
                                 placeholder="Enter your first name"
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
@@ -112,7 +112,7 @@ const RegistrationPage = () => {
                                 name="lastName"
                                 type="text"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-black placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm mb-4"
                                 placeholder="Enter your last name"
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
@@ -127,7 +127,7 @@ const RegistrationPage = () => {
                                 name="email"
                                 type="email"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-black placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm mb-4"
                                 placeholder="Enter your email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -145,7 +145,7 @@ const RegistrationPage = () => {
                                 pattern="[0-9]{10}"
                                 title="Phone number should be 10 digits"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-black placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm mb-4"
                                 placeholder="Enter your phone number"
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
@@ -161,7 +161,7 @@ const RegistrationPage = () => {
                                 type="password"
                                 autoComplete="new-password"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-black placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm mb-4"
                                 placeholder="Enter your password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
@@ -177,7 +177,7 @@ const RegistrationPage = () => {
                                 type="password"
                                 autoComplete="new-password"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-black placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm mb-4"
                                 placeholder="Confirm your password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -194,6 +194,11 @@ const RegistrationPage = () => {
                             Register
                         </button>
                     </div>
+                    <div className="text-center mt-6">
+            <a href="/login" className="font-medium text-green-600 hover:text-green-700">
+              Already a member? Sign in!
+            </a>
+          </div>
                 </form>
             </div>
         </div>
