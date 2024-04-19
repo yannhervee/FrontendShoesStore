@@ -70,6 +70,9 @@ const Products = () => {
     setFilteredProducts(filtered);
   };
 
+  if (loading ) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="container mx-auto mt-8 flex ml-0">
