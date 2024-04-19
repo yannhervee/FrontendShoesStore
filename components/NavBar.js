@@ -28,9 +28,11 @@ const NavBar = () => {
 
         <div className="flex items-center">
           <div className="mr-4">
-            <Link href="#" className="hover:underline">
+            <Link href="/login" className="hover:underline">
               <FontAwesomeIcon icon={faUser} className="mr-2" />
-              <span>Sign In</span>
+                <span>
+                Sign In
+              </span>
             </Link>
           </div>
 
