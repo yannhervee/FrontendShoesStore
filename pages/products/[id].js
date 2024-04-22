@@ -110,6 +110,7 @@ const ProductDetailsPage = () => {
         return;
       }
 
+      
       // Add the product to the cart or perform any other action
       // Example: dispatching an action to add to the cart
       const cartItem = {
@@ -140,6 +141,34 @@ const ProductDetailsPage = () => {
       // Save updated cart to local storage
       localStorage.setItem('shopping_cart', JSON.stringify(cart));
       updateCart(cart); 
+
+       // If user is logged in, also save to the database
+       const token = sessionStorage.getItem('token');
+       const userId = sessionStorage.getItem('user'); // Assuming userId is stored in sessionStorage
+
+       if (token && userId) {
+           const body = {
+               ...cartItem,
+               userId: parseInt(userId),
+              
+           };
+
+           const headers = {
+               'Content-Type': 'application/json',
+               'Authorization': `Bearer ${token}`
+           };
+
+           axios.post('http://localhost:8080/user/cart', body, { headers })
+           .then(response => {
+               console.log('Axios post response: for adding cart', response.data);
+           })
+           .catch(error => {
+               console.error('Error posting to cart:', error);
+               alert('Failed to save item in the cart. Please try again.');
+           });
+   }
+       
+
       router.push("/cart");
     } catch (error) {
       console.error('Error adding item to cart:', error);

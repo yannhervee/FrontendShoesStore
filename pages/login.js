@@ -1,14 +1,40 @@
 import React, { useState } from 'react';
-
+import axios from 'axios';
+import { useRouter } from 'next/router';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter();
 
-  const handleSubmit = (event) => {
+ 
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log('Login submitted for:', email);
-    // Implement your login logic here
-  };
+  
+    try {
+        const response = await axios.post('http://localhost:8080/generateToken', {
+            username: email,
+            password,
+          
+        });
+        console.log('login response:', response);
+        
+        //     const userData = await response.json();
+            
+        //     // Store user information securely in session storage
+        console.log("response from login", response)
+        sessionStorage.setItem('token', response.data);
+      //  sessionStorage.setItem('user', 1);
+            
+        //     // Redirect to home page or user profile page
+          router.push('productListing');
+        
+        // Navigate to another page or clear the form
+    } catch (error) {
+        console.error('Registration failed:', error);
+        alert('Registration failed: ' + (error.response?.data?.message || error.message));
+    }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-my-image">

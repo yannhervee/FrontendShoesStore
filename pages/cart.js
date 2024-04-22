@@ -8,13 +8,15 @@ const CartPage = () => {
   const router = useRouter();
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem('shopping_cart')) || [];
+    //console.log("storecart", storedCart)
     const fetchCartItems = async () => {
       const updatedCart = [];
       for (const item of storedCart) {
+        console.log('item', item)
         try {                       ///productBySizeColor/{pid}/{sid}/{cid}
-          const response = await axios.get(`http://localhost:8080/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
+          const response = await axios.get(`http://localhost:8080/product/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
           const productInfo = response.data;
-          console.log("info prod", response)
+          //console.log("info prod", response)
           const updatedItem = { ...item, ...productInfo, quantity: item.quantity, stockQuantity: productInfo.quantity };
           updatedCart.push(updatedItem);
         } catch (error) {

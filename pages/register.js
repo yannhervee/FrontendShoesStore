@@ -66,7 +66,7 @@ const RegistrationPage = () => {
               sessionStorage.setItem('user', response.data.userId);
                 
             //     // Redirect to home page or user profile page
-                router.push('productListing');
+                router.push('login');
             
             // Navigate to another page or clear the form
         } catch (error) {

@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faShoppingCart } from "@fortawesome/free-solid-svg-icons";
+import { faUser, faShoppingCart, faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { useCart } from "./cartContext"; 
 import axios from "axios";
@@ -10,21 +10,53 @@ const NavBar = () => {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const router = useRouter();
+  const { cartItems } = useCart();
+  const cartItemCount = cartItems.length;
+  const [user, setUser] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false); 
+
+
+  
+
 
   useEffect(() => {
     axios.get("http://localhost:8080/category")
       .then((res) => {
         setCategories(res.data);
         setLoading(false);
-      })
+      }
+    )
+    
+      
       .catch((error) => {
         console.error("Error fetching categories:", error);
         setLoading(false);
       });
+
+       // Check if the user is logged in
+    const token = sessionStorage.getItem("token");
+    if (token) {
+      // Ideally, decode token or fetch user details securely to display
+      setUser("Yann");
+    }
   }, []);
 
-  const { cartItems } = useCart();
-  const cartItemCount = cartItems.length;
+  const handleLogout = () => {
+    sessionStorage.removeItem("token");
+    setUser(null);
+    setDropdownOpen(false);  
+    router.push('/login'); // Redirect to login after logout
+  };
+
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
+  };
+  const closeDropdown = () => {
+    setDropdownOpen(false);
+  };
+
+
+
 
   return (
     <header className="bg-white text-black">
@@ -52,12 +84,38 @@ const NavBar = () => {
         </div>
 
         <div className="flex items-center">
-          <div className="mr-4">
+          {/* <div className="mr-4">
             <Link href="/login" className="hover:underline">
               <FontAwesomeIcon icon={faUser} className="mr-2" />
               <span>Sign In</span>
             </Link>
-          </div>
+          </div> */}
+          {/* Conditional rendering based on login status */}
+          {user ? (
+            <div className="relative mr-4">
+              <button className="flex items-center hover:underline" onClick={toggleDropdown}>
+                <FontAwesomeIcon icon={faUser} className="mr-2" />
+                <span>{user} <FontAwesomeIcon icon={faCaretDown} /></span>
+              </button>
+              {dropdownOpen && (
+                <div className="absolute right-0 bg-white shadow-md mt-2 py-2 w-48" onMouseLeave={closeDropdown}>
+                  <Link href="/userProfile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Manage Profile</Link>
+                  <Link href="/orderHistory" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Order History</Link>
+                  <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="mr-4">
+              <Link href="/login" className="hover:underline">
+                <FontAwesomeIcon icon={faUser} className="mr-2" />
+                <span>Sign In</span>
+              </Link>
+            </div>
+          )}
+
+
+
 
           <div>
             <Link href="/cart">
