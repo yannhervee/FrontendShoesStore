@@ -52,13 +52,14 @@ const ProfilePage = () => {
         router.push('/login'); // Redirect to login page or home page
         return;
       }
-
+      console.log("user id", userId)
       try {
         const response = await axios.get(`http://localhost:8080/user/userRegistration/${userId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        console.log('User data fetched successfully:', response.data); // Log the response data
+        console.log('User data fetched successfully:', response); // Log the response data
         const userData = response.data;
+        
 
         setEmail(userData.email || '');
         setFirstName(userData.firstName || '');
@@ -101,7 +102,7 @@ const ProfilePage = () => {
 
         // Check if paymentInformation is not null, otherwise set to default values
         setPaymentInfo(userData.paymentInformation ? {
-          cardNumber: userData.paymentInformation.cardNumber,
+          cardNumber: userData.paymentInformation.ccNumber,
           expMonth: userData.paymentInformation.expMonth,
           expYear: userData.paymentInformation.expYear,
           cvv: userData.paymentInformation.cvv,
@@ -242,6 +243,7 @@ const ProfilePage = () => {
       router.push('/login');
       return;
     }
+    console.log("exp month to send", paymentInfo)
     const paymentData = {
       ccNumber: paymentInfo.cardNumber,
       expYear: paymentInfo.expYear,
@@ -257,7 +259,12 @@ const ProfilePage = () => {
         state: billingInfo.state,
       }
     };
-
+    // try {
+    //   const response = await axios.post(`http://localhost:8080/user/userPaymentInformation/${userId}`, {
+    //     paymentInformation: paymentData
+    //   }, {
+    //     headers: { Authorization: `Bearer ${token}` }
+    //   });
     try {
       const response = await axios.post(`http://localhost:8080/user/userPaymentInformation/${userId}`, paymentData, {
           headers: { Authorization: `Bearer ${token}` }
@@ -760,7 +767,9 @@ const ProfilePage = () => {
                 <div className="flex flex-col flex-1 mb-16">
                   <label htmlFor="cvv" className="text-sm font-semibold mb-1">CVV</label>
                   <input id="cvv" type="text" className="border border-gray-300 rounded-md py-2 px-3 w-1/2 focus:outline-none focus:border-blue-500" placeholder="Enter CVV"
-                    required />
+                  name="cvv"
+                    onChange={handlePaymentInputChange}
+                   required />
                 </div>
 
 

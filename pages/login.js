@@ -24,10 +24,11 @@ const LoginPage = () => {
         //     // Store user information securely in session storage
         console.log("response from login", response)
         sessionStorage.setItem('token', response.data.token);
-        sessionStorage.setItem('user', 1);
+                    //     // Store user information securely in session storage
+        sessionStorage.setItem('user', response.data.userId);
             
         //     // Redirect to home page or user profile page
-         // router.push('productListing');
+          router.push('productListing');
         
         // Navigate to another page or clear the form
     } catch (error) {
