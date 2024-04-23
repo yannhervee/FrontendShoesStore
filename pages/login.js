@@ -23,8 +23,9 @@ const LoginPage = () => {
             
         //     // Store user information securely in session storage
         console.log("response from login", response)
-        sessionStorage.setItem('token', response.data);
-      //  sessionStorage.setItem('user', 1);
+        sessionStorage.setItem('token', response.data.token);
+                    //     // Store user information securely in session storage
+        sessionStorage.setItem('user', response.data.userId);
             
         //     // Redirect to home page or user profile page
           router.push('productListing');
