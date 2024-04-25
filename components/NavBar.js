@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faShoppingCart, faCaretDown } from "@fortawesome/free-solid-svg-icons";
+import { faUser, faShoppingCart, faCaretDown, faSearch } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
-import { useCart } from "./cartContext"; 
+import { useCart } from "./cartContext";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
@@ -13,10 +13,11 @@ const NavBar = () => {
   const { cartItems } = useCart();
   const cartItemCount = cartItems.length;
   const [user, setUser] = useState(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false); 
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
 
-  
+
 
 
   useEffect(() => {
@@ -25,15 +26,15 @@ const NavBar = () => {
         setCategories(res.data);
         setLoading(false);
       }
-    )
-    
-      
+      )
+
+
       .catch((error) => {
         console.error("Error fetching categories:", error);
         setLoading(false);
       });
 
-       // Check if the user is logged in
+    // Check if the user is logged in
     const token = sessionStorage.getItem("token");
     if (token) {
       // Ideally, decode token or fetch user details securely to display
@@ -44,7 +45,7 @@ const NavBar = () => {
   const handleLogout = () => {
     sessionStorage.removeItem("token");
     setUser(null);
-    setDropdownOpen(false);  
+    setDropdownOpen(false);
     router.push('/login'); // Redirect to login after logout
   };
 
@@ -54,7 +55,20 @@ const NavBar = () => {
   const closeDropdown = () => {
     setDropdownOpen(false);
   };
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value); // Update the search term as the user types
+  };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    console.log('Searching for:', searchTerm);
+    // Implement your search logic here, possibly setting up a route to display search results
+
+    if (searchTerm.trim()) {
+      router.push(`/search?query=${encodeURIComponent(searchTerm.trim())}`);
+    }
+
+  };
 
 
 
@@ -62,7 +76,7 @@ const NavBar = () => {
     <header className="bg-white text-black">
       <div className="container ml-8 mr-16 flex justify-between items-center p-4">
         <div className="flex items-center">
-          
+
           {/* Image and Title within the same flex container */}
           <div className="flex items-center mr-4">
             <img src="/ecoTrans.png" alt="Eco Friendly Shoes" className="w-10 h-10"></img> {/* Ensure you add alt text for accessibility */}
@@ -72,14 +86,21 @@ const NavBar = () => {
               </Link>
             </div>
           </div>
-          
+
           <div className="ml-4">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="px-2 py-1 rounded-md border border-green-800 focus:outline-none text-black"
-              style={{ width: '316px' }}
-            />
+            <form onSubmit={handleSearch} className="flex items-center">
+              <input
+                type="text"
+                placeholder="Search..."
+                onChange={handleSearchChange}
+                className="px-2 py-1 rounded-md border border-green-800 focus:outline-none text-black"
+                style={{ width: '316px' }}
+              />
+              <button type="submit" className="p-2 bg-white hover:bg-gray-200 text-black rounded">
+                <FontAwesomeIcon icon={faSearch} />
+              </button>
+            </form>
+
           </div>
         </div>
 
