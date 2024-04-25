@@ -7,31 +7,69 @@ const CartPage = () => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem('shopping_cart')) || [];
-    //console.log("storecart", storedCart)
     const fetchCartItems = async () => {
-      const updatedCart = [];
-      for (const item of storedCart) {
-        console.log('item', item)
-        try {                       ///productBySizeColor/{pid}/{sid}/{cid}
-          const response = await axios.get(`http://localhost:8080/product/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
-          const productInfo = response.data;
-          console.log("info prod", response.data)
-          const appropriateImage = productInfo.images.find(img => img.url.toLowerCase().includes(productInfo.colorName.toLowerCase()));
-          const updatedItem = { ...item, ...productInfo, quantity: item.quantity, stockQuantity: productInfo.quantity,
-            imageUrl: appropriateImage ? appropriateImage.url : 'path/to/default/image'  };
-          updatedCart.push(updatedItem);
-        } catch (error) {
-          console.error(`Error fetching product with ID ${item.id}:`, error);
+      setLoading(true);
+      const token = sessionStorage.getItem('token');
+      const userId = sessionStorage.getItem('user');
+  
+      if (token && userId) {
+        // Fetch cart items from the database for logged-in users
+        console.log("user logged in")
+        try {
+            const response = await axios.get(`http://localhost:8080/user/cart/${userId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            console.log("response from server", response.data)
+            const updatedCart = [];
+        for (const item of response.data) {
+          console.log("item in loop ", item)
+          try {
+           // const response = await axios.get(`http://localhost:8080/product/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
+            //const productInfo = response.data;
+           // console.log("productInfo", productInfo)
+            const appropriateImage = item.images.find(img => img.url.toLowerCase().includes(item.colorName.toLowerCase()));
+          //  const updatedItem = { ...item, ...productInfo, imageUrl: appropriateImage ? appropriateImage.url : 'path/to/default/image' };
+            const updatedItem = { ...item, quantity: item.quantity, stockQuantity: item.stockAvailable, imageUrl: appropriateImage ? appropriateImage.url : 'path/to/default/image' };
+          //  const updatedItem = { ...item, ...productInfo, quantity: item.quantity, stockQuantity: productInfo.quantity };
+            updatedCart.push(updatedItem);
+          //  updatedCart.push(updatedItem);
+          } catch (error) {
+            console.error(`Error fetching product details for cart item with ID ${item.productId}:`, error);
+          }
         }
+        setCartItems(updatedCart);
+        console.log("Cart items loaded from local storage:", updatedCart);
+        } catch (error) {
+            console.error('Failed to fetch cart from server:', error);
+            setLoading(false);
+        }
+    
+    
+      } else {
+        // Load cart items from local storage for guests
+        console.log("user not logged in")
+        const storedCart = JSON.parse(localStorage.getItem('shopping_cart')) || [];
+        const updatedCart = [];
+        for (const item of storedCart) {
+          try {
+            const response = await axios.get(`http://localhost:8080/product/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
+            const productInfo = response.data;
+            const appropriateImage = productInfo.images.find(img => img.url.toLowerCase().includes(productInfo.colorName.toLowerCase()));
+           // const updatedItem = { ...item, ...productInfo, imageUrl: appropriateImage ? appropriateImage.url : 'path/to/default/image' };
+            const updatedItem = { ...item, ...productInfo, quantity: item.quantity, stockQuantity: productInfo.quantity, imageUrl: appropriateImage ? appropriateImage.url : 'path/to/default/image' };
+            updatedCart.push(updatedItem);
+          } catch (error) {
+            console.error(`Error fetching product details for cart item with ID ${item.productId}:`, error);
+          }
+        }
+        setCartItems(updatedCart);
+        console.log("Cart items loaded from local storage:", updatedCart);
       }
-      setCartItems(updatedCart);
-      console.log("cart items", cartItems)
       setLoading(false);
     };
+  
     fetchCartItems();
   }, []);
-
 
 
   if (loading || !cartItems) {
@@ -69,37 +107,37 @@ const removeFromCart = (productId, sizeId, colorId) => {
     // Find the item in the cart that matches the given combination of productId, sizeId, and colorId
     console.log("cart items", cartItems)
 
-    // console.log("combination ");
-    // console.log("product", productId);
-    // console.log("sizeId", sizeId);
-    // console.log("colorId", colorId)
-    // const updatedCart = cartItems.map(item => {
+    console.log("combination ");
+    console.log("product", productId);
+    console.log("sizeId", sizeId);
+    console.log("colorId", colorId)
+    const updatedCart = cartItems.map(item => {
       
-    //   if (item.productId === productId && item.sizeId === sizeId && item.colorId === colorId) {
-    //     console.log("item is ", item);
-    //     // Calculate the adjusted quantity considering the available stock quantity
-    //     const adjustedQuantity = Math.min(newQuantity, item.stockQuantity);
-    //     if (adjustedQuantity !== newQuantity) {
-    //       // Display a message informing the user about the limited stock
-    //       alert(`Sorry, only ${item.stockQuantity} item(s) available in stock.`);
-    //     }
-    //     // Update the quantity for the matched item
-    //     return { ...item, quantity: adjustedQuantity };
-    //   }
-    //   return item;
-    // });
+      if (item.productId === productId && item.sizeId === sizeId && item.colorId === colorId) {
+        console.log("item is ", item);
+        // Calculate the adjusted quantity considering the available stock quantity
+        const adjustedQuantity = Math.min(newQuantity, item.stockQuantity);
+        if (adjustedQuantity !== newQuantity) {
+          // Display a message informing the user about the limited stock
+          alert(`Sorry, only ${item.stockQuantity} item(s) available in stock.`);
+        }
+        // Update the quantity for the matched item
+        return { ...item, quantity: adjustedQuantity };
+      }
+      return item;
+    });
   
-    // // Update the cartItems state with the updated cart
-    // setCartItems(updatedCart);
+    // Update the cartItems state with the updated cart
+    setCartItems(updatedCart);
   
-    // // Update the local storage with the updated cart
-    // const updatedLocalStorageCart = updatedCart.map(item => ({
-    //   productId: item.productId,
-    //   sizeId: item.sizeId,
-    //   colorId: item.colorId,
-    //   quantity: item.quantity
-    // }));
-    // localStorage.setItem('shopping_cart', JSON.stringify(updatedLocalStorageCart));
+    // Update the local storage with the updated cart
+    const updatedLocalStorageCart = updatedCart.map(item => ({
+      productId: item.productId,
+      sizeId: item.sizeId,
+      colorId: item.colorId,
+      quantity: item.quantity
+    }));
+    localStorage.setItem('shopping_cart', JSON.stringify(updatedLocalStorageCart));
   };
   
 
