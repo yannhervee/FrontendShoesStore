@@ -246,32 +246,39 @@ const ProductDetailsPage = () => {
 
        // If user is logged in, also save to the database
        const token = sessionStorage.getItem('token');
-       const userId = sessionStorage.getItem('user'); // Assuming userId is stored in sessionStorage
+const userId = sessionStorage.getItem('user'); // Assuming userId is stored in sessionStorage
+const shopping_cart = sessionStorage.getItem('cartId'); 
 
-       if (token && userId) {
-           const body = {
-               ...cartItem,
-               userId: parseInt(userId),
-              
-           };
+if (token && userId) {
+    let body = {
+        ...cartItem, // Assuming cartItem is defined elsewhere and should be included in every request
+        userId: parseInt(userId, 10) // Ensures userId is always treated as an integer
+    };
 
-           const headers = {
-               'Content-Type': 'application/json',
-               'Authorization': `Bearer ${token}`
-           };
+    // Append cartId to the body if it exists
+    if (shopping_cart) {
+        body.cartId = shopping_cart;
+    }
 
-           axios.post('http://localhost:8080/user/cart', body, { headers })
-           .then(response => {
-               console.log('Axios post response: for adding cart', response.data);
-           })
-           .catch(error => {
-               console.error('Error posting to cart:', error);
-               alert('Failed to save item in the cart. Please try again.');
-           });
-   }
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+
+    axios.post('http://localhost:8080/user/cart', body, { headers })
+    .then(response => {
+        console.log('Axios post response: for adding cart', response.data);
+    })
+    .catch(error => {
+        console.error('Error posting to cart:', error);
+        alert('Failed to save item in the cart. Please try again.');
+    });
+}
+
+   
        
 
-     // router.push("/cart");
+      router.push("/cart");
     } catch (error) {
       console.error('Error adding item to cart:', error);
       alert('Error adding item to cart. Please try again.'); // Optional: Display error message
