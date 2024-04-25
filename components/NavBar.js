@@ -38,7 +38,8 @@ const NavBar = () => {
     const token = sessionStorage.getItem("token");
     if (token) {
       // Ideally, decode token or fetch user details securely to display
-      setUser("Yann");
+      const name = sessionStorage.getItem("firstName");
+      setUser(name);
     }
   }, []);
 
