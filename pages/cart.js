@@ -7,30 +7,72 @@ const CartPage = () => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem('shopping_cart')) || [];
-    //console.log("storecart", storedCart)
     const fetchCartItems = async () => {
-      const updatedCart = [];
-      for (const item of storedCart) {
-        console.log('item', item)
-        try {                       ///productBySizeColor/{pid}/{sid}/{cid}
-          const response = await axios.get(`http://localhost:8080/product/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
-          const productInfo = response.data;
-          //console.log("info prod", response)
-          const updatedItem = { ...item, ...productInfo, quantity: item.quantity, stockQuantity: productInfo.quantity };
-          updatedCart.push(updatedItem);
-        } catch (error) {
-          console.error(`Error fetching product with ID ${item.id}:`, error);
+      setLoading(true);
+      const token = sessionStorage.getItem('token');
+      const userId = sessionStorage.getItem('user');
+  
+      if (token && userId) {
+        // Fetch cart items from the database for logged-in users
+        console.log("user logged in")
+        try {
+            const response = await axios.get(`http://localhost:8080/user/cart/${userId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            console.log("response from server", response.data)
+            const updatedCart = [];
+        for (const item of response.data) {
+          console.log("item in loop ", item)
+          try {
+           // const response = await axios.get(`http://localhost:8080/product/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
+            //const productInfo = response.data;
+           // console.log("productInfo", productInfo)
+            const appropriateImage = item.images.find(img => img.url.toLowerCase().includes(item.colorName.toLowerCase()));
+          //  const updatedItem = { ...item, ...productInfo, imageUrl: appropriateImage ? appropriateImage.url : 'path/to/default/image' };
+            const updatedItem = { ...item, quantity: item.quantity, stockQuantity: item.stockAvailable, imageUrl: appropriateImage ? appropriateImage.url : 'path/to/default/image' };
+          //  const updatedItem = { ...item, ...productInfo, quantity: item.quantity, stockQuantity: productInfo.quantity };
+            updatedCart.push(updatedItem);
+          //  updatedCart.push(updatedItem);
+          } catch (error) {
+            console.error(`Error fetching product details for cart item with ID ${item.productId}:`, error);
+          }
         }
+        setCartItems(updatedCart);
+        console.log("Cart items loaded from local storage:", updatedCart);
+        } catch (error) {
+            console.error('Failed to fetch cart from server:', error);
+            setLoading(false);
+        }
+    
+    
+      } else {
+        // Load cart items from local storage for guests
+        console.log("user not logged in")
+        const storedCart = JSON.parse(localStorage.getItem('shopping_cart')) || [];
+        const updatedCart = [];
+        for (const item of storedCart) {
+          try {
+            const response = await axios.get(`http://localhost:8080/product/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
+            const productInfo = response.data;
+            const appropriateImage = productInfo.images.find(img => img.url.toLowerCase().includes(productInfo.colorName.toLowerCase()));
+           // const updatedItem = { ...item, ...productInfo, imageUrl: appropriateImage ? appropriateImage.url : 'path/to/default/image' };
+            const updatedItem = { ...item, ...productInfo, quantity: item.quantity, stockQuantity: productInfo.quantity, imageUrl: appropriateImage ? appropriateImage.url : 'path/to/default/image' };
+            updatedCart.push(updatedItem);
+          } catch (error) {
+            console.error(`Error fetching product details for cart item with ID ${item.productId}:`, error);
+          }
+        }
+        setCartItems(updatedCart);
+        console.log("Cart items loaded from local storage:", updatedCart);
       }
-      setCartItems(updatedCart);
-      console.log("cart items", cartItems)
       setLoading(false);
     };
+  
     fetchCartItems();
   }, []);
 
-  if (loading) {
+
+  if (loading || !cartItems) {
     return <div>Loading...</div>;
   }
 
@@ -63,6 +105,7 @@ const removeFromCart = (productId, sizeId, colorId) => {
   // Function to handle quantity change
   const handleQuantityChange = (productId, sizeId, colorId, newQuantity) => {
     // Find the item in the cart that matches the given combination of productId, sizeId, and colorId
+    console.log("cart items", cartItems)
 
     console.log("combination ");
     console.log("product", productId);
@@ -123,7 +166,9 @@ const handleCheckout = () => {
           <h1 className="text-2xl font-bold mb-4">Shopping Cart</h1>
           {cartItems.map(item => (
             <div key={item.id} className="flex items-center border-b border-gray-300 py-4">
-              <div className="flex-shrink-0 w-32 h-32 bg-gray-200 border-black mr-4"></div>
+              <div className="flex-shrink-0 w-32 h-32 bg-gray-200 border-black mr-4">
+              <img src={item.imageUrl} alt={"shoes image"} className="w-full h-full object-contain rounded-lg mb-4" />
+              </div>
               <div className="flex flex-col flex-1">
                 <div className="text-lg font-semibold">{item.productName}</div>
                 <div className="text-gray-600">Color: {item.colorName}</div>

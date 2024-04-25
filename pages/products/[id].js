@@ -28,9 +28,40 @@ const ProductDetailsPage = () => {
         const response = await axios.get(`http://localhost:8080/product/${id}`);
         setProduct(response.data);
        
-        setCurrentImages(product.images); // Initial image set up
-        
-        console.log("product", response.data);
+        setCurrentImages(response.data.images); // Initial image set up
+        console.log("products", response.data);
+        const initialSizes = response.data.sizeColorDTO.map(sc => ({...sc.size}));
+        const initialColors = Object.values(response.data.sizeColorDTO.flatMap(sc => sc.color.map(c => ({
+          ...c.color,
+          quantity: c.quantity
+        }))).reduce((acc, cur) => {
+          acc[cur.color] = {...cur};  // Ensures distinct colors
+          return acc;
+        }, {}));
+  
+        console.log("size available", initialSizes);
+        console.log("colors available", initialColors);
+
+      console.log("size available", initialSizes)
+
+
+      setAvailableSizes(initialSizes);
+      setAvailableColors(initialColors)
+      console.log("colors available", initialColors)
+      
+
+      // Set default selected size if available and default colors for that size
+      // if (initialSizes.length > 0) {
+      //   setSelectedSize(initialSizes[0]);
+      //   const colorsForSize = response.data.sizeColorDTO.find(sc => sc.size.id === initialSizes[0].id)?.color.map(c => ({
+      //     ...c.color,
+      //     quantity: c.quantity
+      //   }));
+      //   console.log("colors available", colorsForSize)
+      //   setAvailableColors(colorsForSize);
+      // }
+     // setLoading(false);
+
 
         // Set default selected size
         if (response.data.sizeColorDTO.length > 0) {
@@ -38,31 +69,34 @@ const ProductDetailsPage = () => {
         }
       } catch (error) {
         console.error('Error fetching product details:', error);
+      //  setLoading(false);
+      } finally{
         setLoading(false);
       }
+      // fetch('http://localhost:8080/sizes')
+      //   .then(response => response.json())
+      //   .then(data => {
+      //     console.log("data for sizes", data);
+      //     setAvailableSizes(data)
+      //   })
+      //   .catch(error => console.error('Failed to load sizes:', error));
 
-      fetch('http://localhost:8080/sizes')
-        .then(response => response.json())
-        .then(data => {
-          console.log("data for sizes", data);
-          setAvailableSizes(data)
-        })
-        .catch(error => console.error('Failed to load sizes:', error));
-
-      // Fetch colors
-      fetch('http://localhost:8080/colors')
-        .then(response => response.json())
-        .then(data => {
-          console.log("data for colors", data);
-          setAvailableColors(data)
-        })
-        .catch(error => console.error('Failed to load colors:', error));
+      // // Fetch colors
+      // fetch('http://localhost:8080/colors')
+      //   .then(response => response.json())
+      //   .then(data => {
+      //     console.log("data for colors", data);
+      //     setAvailableColors(data)
+      //   })
+      //   .catch(error => console.error('Failed to load colors:', error));
     };
 
     if (id) {
       fetchProductDetails();
+    }else{
+      setLoading(false);
     }
-    setLoading(false);
+    
   }, [id]);
 
   useEffect(() => {
@@ -70,27 +104,94 @@ const ProductDetailsPage = () => {
     setSelectedColor(null);
   }, [selectedSize]);
 
-  const handleSizeClick = (size) => {
-    setSelectedSize(size);
-    setSelectedColor(null); // Reset selected color when size changes
+  const handleSizeClick = (sizeObject) => {
+    console.log('Selected size object:', sizeObject);
+    setSelectedSize(sizeObject);
+  
+    // Filter available colors based on the selected size
+    const availableColorsForSize = product.sizeColorDTO
+      .find(sc => sc.size.id === sizeObject.id)?.color
+      .map(c => c.color);
+  
+    console.log('Available colors for selected size:', availableColorsForSize);
+  
+    // Check if selected color is available in the new size
+    if (!availableColorsForSize.some(c => selectedColor && c.id === selectedColor.id)) {
+      setSelectedColor(null);
+    }
+  
     setCurrentImages(product.images); // Revert to showing all or default images
   };
-
-  const handleColorClick = (color) => {
-    setSelectedColor(color);
-    // Filter images based on selected color
+  
+  const handleColorClick = (colorObject) => {
+    console.log('Selected color object:', colorObject);
+    setSelectedColor(colorObject);
+  
+    // Filter available sizes based on the selected color
+    const availableSizesForColor = product.sizeColorDTO
+      .filter(sc => sc.color.some(c => c.color.id === colorObject.id))
+      .map(sc => sc.size);
+  
+    console.log('Available sizes for selected color:', availableSizesForColor);
+  
+    // Check if selected size is available with the new color
+    if (!availableSizesForColor.some(s => selectedSize && s.id === selectedSize.id)) {
+      setSelectedSize(null);
+    }
+  
     const filteredImages = product.images.filter(image =>
-      image.url.toLowerCase().includes(color.color.toLowerCase())
+      image.url.toLowerCase().includes(colorObject.color.toLowerCase())
     );
-    // Assuming ImageSlider accepts images as a prop and can rerender based on this
+  
     setCurrentImages(filteredImages);
   };
+  
 
+  // Render sizes with some disabled based on available colors
+  const renderSizeOptions = () => {
+    return availableSizes.map(size => {
+      const isAvailable = product.sizeColorDTO.some(sc => 
+        sc.size.id === size.id && 
+        (selectedColor ? sc.color.some(c => c.color.id === selectedColor.id) : true)
+      );
+  
+      return (
+        <button
+          key={size.id}
+          className={`border border-gray-300 rounded-md py-2 px-4 mr-2 ${selectedSize && selectedSize.id === size.id ? 'bg-black text-white' : 'text-black'} ${!isAvailable ? 'bg-gray-500 text-white cursor-not-allowed' : ''}`}
+          disabled={!isAvailable}
+          onClick={() => handleSizeClick(size)}
+        >
+          {size.size}
+        </button>
+      );
+    });
+  };
+  
+  const renderColorOptions = () => {
+    return availableColors.map(color => {
+      const isAvailable = product.sizeColorDTO.some(sc => 
+        (selectedSize ? sc.size.id === selectedSize.id : true) && 
+        sc.color.some(c => c.color.id === color.id)
+      );
+  
+      return (
+        <button
+          key={color.id}
+          className={`border border-gray-300 rounded-md py-2 px-4 mr-2 ${selectedColor && selectedColor.id === color.id ? 'border-red-300' : ''} ${!isAvailable ? 'bg-gray-500 text-white cursor-not-allowed' : ''}`}
+          disabled={!isAvailable}
+          onClick={() => handleColorClick(color)}
+        >
+          {color.color}
+        </button>
+      );
+    });
+  };
+  
   const handlePreview = (image) => {
     setCurrentImages([image]); // Temporarily set the main slider to show this image only
   };
   
-
   const handleAddToCart = async (event) => {
     event.preventDefault();
     try {
@@ -120,6 +221,7 @@ const ProductDetailsPage = () => {
         quantity: 1, // Default quantity
         stockQuantity: 1
       };
+      console.log("item to add", cartItem)
       let cart = JSON.parse(localStorage.getItem('shopping_cart')) || [];
       // Check if the item already exists in the cart
       let existingCartItem = cart.find(item =>
@@ -144,29 +246,36 @@ const ProductDetailsPage = () => {
 
        // If user is logged in, also save to the database
        const token = sessionStorage.getItem('token');
-       const userId = sessionStorage.getItem('user'); // Assuming userId is stored in sessionStorage
+const userId = sessionStorage.getItem('user'); // Assuming userId is stored in sessionStorage
+const shopping_cart = sessionStorage.getItem('cartId'); 
 
-       if (token && userId) {
-           const body = {
-               ...cartItem,
-               userId: parseInt(userId),
-              
-           };
+if (token && userId) {
+    let body = {
+        ...cartItem, // Assuming cartItem is defined elsewhere and should be included in every request
+        userId: parseInt(userId, 10) // Ensures userId is always treated as an integer
+    };
 
-           const headers = {
-               'Content-Type': 'application/json',
-               'Authorization': `Bearer ${token}`
-           };
+    // Append cartId to the body if it exists
+    if (shopping_cart) {
+        body.cartId = shopping_cart;
+    }
 
-           axios.post('http://localhost:8080/user/cart', body, { headers })
-           .then(response => {
-               console.log('Axios post response: for adding cart', response.data);
-           })
-           .catch(error => {
-               console.error('Error posting to cart:', error);
-               alert('Failed to save item in the cart. Please try again.');
-           });
-   }
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+
+    axios.post('http://localhost:8080/user/cart', body, { headers })
+    .then(response => {
+        console.log('Axios post response: for adding cart', response.data);
+    })
+    .catch(error => {
+        console.error('Error posting to cart:', error);
+        alert('Failed to save item in the cart. Please try again.');
+    });
+}
+
+   
        
 
       router.push("/cart");
@@ -177,16 +286,13 @@ const ProductDetailsPage = () => {
 
   };
 
+ 
   if (loading || !product) {
     return <div>Loading...</div>;
   }
 
   // Extract unique sizes and colors
-  const uniqueSizes = [...new Set(product.sizeColorDTO.map((sizeColor) => sizeColor.size.size))];
-  const uniqueColors = product.sizeColorDTO
-    .find((sizeColor) => sizeColor.size.size === selectedSize)
-    ?.color.map((colorInfo) => colorInfo.color.color) || [];
-
+ 
   return (
     <>
       <h1 className="text-3xl font-bold mb-4 text-center mt-24 mr-32">{product.product.name}</h1>
@@ -268,9 +374,9 @@ const ProductDetailsPage = () => {
           <div className="mb-4">
             <label className="font-medium">Select Size:</label>
             <div className="flex mt-2">
+            {renderSizeOptions()}
 
-
-              {availableSizes.map((size) => (
+              {/* {availableSizes.map((size) => (
                 <button
                   key={size}
                   className={`disabled:text-white disabled:bg-gray-600 border border-gray-300 rounded-md py-2 px-4 mr-2 ${selectedSize === size ? 'bg-black text-white' : ''
@@ -280,14 +386,15 @@ const ProductDetailsPage = () => {
                 >
                   {size.size}
                 </button>
-              ))}
+              ))} */}
             </div>
           </div>
           {/* Color Options */}
           <div className="mb-8">
             <label className="font-medium">Select Color:</label>
             <div className="flex mt-2 flex-wrap mb-8">
-              {availableColors.map((color) => (
+            {renderColorOptions()}
+              {/* {availableColors.map((color) => (
                 <button
                   key={color.color}
                   className={`disabled:text-white disabled:bg-gray-600 border border-gray-300 rounded-md py-2 px-4 mr-2 ${selectedColor === color ? 'border-red-300' : ''}`}
@@ -297,7 +404,7 @@ const ProductDetailsPage = () => {
                 >
                   {color.color}
                 </button>
-              ))}
+              ))} */}
             </div>
           </div>
 

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import { useCart } from '../components/cartContext';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+  const { updateCart } = useCart();
+  
 
  
 
@@ -26,15 +29,55 @@ const LoginPage = () => {
         sessionStorage.setItem('token', response.data.token);
                     //     // Store user information securely in session storage
         sessionStorage.setItem('user', response.data.userId);
+        sessionStorage.setItem('firstName', response.data.firstName);
+
+        // Fetch and update cart details immediately after login
+        await fetchAndUpdateCart();
             
-        //     // Redirect to home page or user profile page
-          router.push('productListing');
+            // Redirect to home page or user profile page
+       //   router.push('productListing');
         
         // Navigate to another page or clear the form
     } catch (error) {
         console.error('Registration failed:', error);
         alert('Registration failed: ' + (error.response?.data?.message || error.message));
     }
+};
+const fetchAndUpdateCart = async () => {
+  const token = sessionStorage.getItem('token');
+  const userId = sessionStorage.getItem('user'); // Ensure this key matches your session storage for userId
+
+  if (token && userId) {
+    try {
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+      const response = await axios.get(`http://localhost:8080/user/cart/${userId}`, { headers });
+      const cartItems = response.data.items; // Assuming the response contains an array of items
+      //updateCart(response.data.items);
+      console.log("response after login and fetch", response.data)
+      
+      if (response.data) {
+        updateCart(response.data); // Use the updateCart function to update the context and UI
+        const cartId = response.data[0].cartId; // Assuming the response includes the cartId
+        sessionStorage.setItem('cartId', cartId);
+    } else {
+        updateCart([]); // No items returned, clear the cart
+    }
+
+      // Update local storage with fetched cart items
+      //localStorage.setItem('shopping_cart', JSON.stringify(cartItems));
+
+      // Update session storage with the cartId
+      
+
+      // Update cart count in your state or UI, if applicable
+    //  updateCartCount(cartItems.length); // Ensure you have a method to update the cart count in the UI
+    } catch (error) {
+      console.error('Failed to fetch cart:', error);
+    }
+  }
 };
 
   return (
