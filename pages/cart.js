@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import { useCart } from '@/components/cartContext';
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { updateCart, updateItemQuantity, removeItem } = useCart();
   useEffect(() => {
     const fetchCartItems = async () => {
       setLoading(true);
@@ -82,23 +84,54 @@ const CartPage = () => {
   // Function to remove an item from the cart
 const removeFromCart = (productId, sizeId, colorId) => {
     console.log("remove")
-
-    console.log("combination ");
-    console.log("product", productId);
-    console.log("sizeId", sizeId);
-    console.log("colorId", colorId)
+    console.log("this are the item", cartItems)
+   
+    removeItem(productId, sizeId, colorId)
     const updatedCart = cartItems.filter(item => !(item.productId === productId && item.sizeId === sizeId && item.colorId === colorId));
     console.log('left items', updatedCart);
+    
+
+      // Assuming each item in your cart uniquely identifies a "cartProductId" or similar identifier
+      const item = cartItems.find(item => item.productId === productId && item.sizeId === sizeId && item.colorId === colorId);
+      if (!item) {
+          console.error('Item not found in cart');
+          return;
+      }
+      else{
+        console.log("item to remove from back", item)
+        const token = sessionStorage.getItem('token');
+                const userId = sessionStorage.getItem('user'); // Assuming userId is stored in sessionStorage
+                const shopping_cart = sessionStorage.getItem('cartId'); 
+                //user if loggedIn
+                if(token && userId && shopping_cart){
+                   
+                
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                };
+            
+                axios.delete(`http://localhost:8080/user/cart/${item.cartProductSizeColorId}`, { headers })
+                .then(response => {
+                    console.log('Axios delete response: for deleting item', response.data);
+                })
+                .catch(error => {
+                    console.error('Error posting to cart:', error);
+                    alert('Failed to save item in the cart. Please try again.');
+                });
+            }
+
+      }
+    // const updatedLocalStorageCart = updatedCart.map(item => ({
+    //   productId: item.productId,
+    //   sizeId: item.sizeId,
+    //   colorId: item.colorId,
+    //   quantity: item.quantity
+    // }));
+    // localStorage.setItem('shopping_cart', JSON.stringify(updatedLocalStorageCart));
+    // // Manually trigger an update to context if in the same tab
+    // window.dispatchEvent(new Event('storage'));
     setCartItems(updatedCart);
-    const updatedLocalStorageCart = updatedCart.map(item => ({
-      productId: item.productId,
-      sizeId: item.sizeId,
-      colorId: item.colorId,
-      quantity: item.quantity
-    }));
-    localStorage.setItem('shopping_cart', JSON.stringify(updatedLocalStorageCart));
-    // Manually trigger an update to context if in the same tab
-    window.dispatchEvent(new Event('storage'));
   };
   
 
@@ -116,12 +149,16 @@ const removeFromCart = (productId, sizeId, colorId) => {
       if (item.productId === productId && item.sizeId === sizeId && item.colorId === colorId) {
         console.log("item is ", item);
         // Calculate the adjusted quantity considering the available stock quantity
-        const adjustedQuantity = Math.min(newQuantity, item.stockQuantity);
-        if (adjustedQuantity !== newQuantity) {
+        let adjustedQuantity = newQuantity;
+        if(newQuantity > item.stockQuantity){
+          adjustedQuantity = item.stockQuantity;
+       
           // Display a message informing the user about the limited stock
           alert(`Sorry, only ${item.stockQuantity} item(s) available in stock.`);
         }
+        
         // Update the quantity for the matched item
+        updateItemQuantity(productId, sizeId, colorId, adjustedQuantity)
         return { ...item, quantity: adjustedQuantity };
       }
       return item;
