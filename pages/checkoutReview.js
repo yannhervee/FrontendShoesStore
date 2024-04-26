@@ -330,48 +330,7 @@ const CheckoutReviewPage = () => {
      orderData.userId = userId
       };
 
-    
-    
-    // const orderData = {
-    //   productSizeColorList: cartItems.map(item => ({
-    //     productId: item.productId,
-    //     sizeId: item.sizeId,
-    //     colorId: item.colorId,
-    //     quantity: item.quantity
-    //   })),
-    //   total: subtotal,
-    //   shippingAddress: {
-    //     address: shippingInfo.address,
-    //     city: shippingInfo.city,
-    //     zipCode: shippingInfo.zipCode,
-    //     firstName: shippingInfo.firstName,
-    //     lastName: shippingInfo.lastName,
-    //     state: shippingInfo.state
-    //   },
-    //   billingAddress: {
-    //     address: billingInfo.address,
-    //     city: billingInfo.city,
-    //     zipCode: billingInfo.zipCode,
-    //     firstName: billingInfo.firstName,
-    //     lastName: billingInfo.lastName,
-    //     state: billingInfo.state
-    //   },
-    //   paymentInformation: {
-    //     ccNumber: paymentInfo.cardNumber,
-    //     expYear: parseInt(paymentInfo.expYear),
-    //     expMonth: parseInt(paymentInfo.expMonth),
-    //     cvv: parseInt(paymentInfo.cvv),
-    //     billingAddress: {
-    //       address: billingInfo.address,
-    //       city: billingInfo.city,
-    //       zipCode: billingInfo.zipCode,
-    //       firstName: billingInfo.firstName,
-    //       lastName: billingInfo.lastName,
-    //       state: billingInfo.state
-    //     }
-    //   },
-      
-    // };
+
     console.log("order data", orderData)
 
     try {
