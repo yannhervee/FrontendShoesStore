@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { useCart } from '../components/cartContext';
 import { useDispatch } from 'react-redux';
 import { setUser } from '@/globalRedux/features/userSlice';
+import CryptoJS from 'crypto-js';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,6 +16,10 @@ const LoginPage = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    // const secretKey = 'LoveShoeEco3799!'
+    // console.log("secretKey", secretKey)
+    // const encryptedPassword = CryptoJS.AES.encrypt(password, secretKey).toString();
+    // console.log("encrypted", encryptedPassword)
   
     try {
         const response = await axios.post('http://localhost:8080/generateToken', {
