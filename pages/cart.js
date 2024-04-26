@@ -185,7 +185,7 @@ const handleCheckout = () => {
    // localStorage.removeItem('shopping_cart');
   
     // Display a confirmation message
-    alert('Thank you for your purchase! Your order has been placed.');
+   // alert('Thank you for your purchase! Your order has been placed.');
     router.push("/checkoutShip");
     // Optionally, redirect the user to the checkout page
     // router.push('/checkout'); // Assuming you're using Next.js router

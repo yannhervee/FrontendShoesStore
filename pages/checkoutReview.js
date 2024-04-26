@@ -37,6 +37,10 @@ const CheckoutReviewPage = () => {
   const [showModalShipping, setShowModalShipping] = useState(false);
   const [showModalBilling, setShowModalBilling] = useState(false);
   const [showModalEmail, setShowModalEmail] = useState(false);
+  const TAX_RATE = 0.053; // 5.3% expressed as a decimal
+  const [total, setTotal] = useState(0);
+  const [tax, setTax] = useState(0);
+  const [subtotal, setSubtotal] = useState(0);
 
 
 
@@ -47,7 +51,7 @@ const CheckoutReviewPage = () => {
       const updatedCart = [];
       for (const item of storedCart) {
         try {                       ///productBySizeColor/{pid}/{sid}/{cid}
-          const response = await axios.get(`http://localhost:8080/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
+          const response = await axios.get(`http://localhost:8080/product/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
           const productInfo = response.data;
           console.log("info prod", response)
           const updatedItem = { ...item, ...productInfo, quantity: item.quantity };
@@ -57,10 +61,21 @@ const CheckoutReviewPage = () => {
         }
       }
       setCartItems(updatedCart);
+      const newTotal = updatedCart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+           
+      const newTax = newTotal * TAX_RATE;
+      const newSubtotal = newTotal + newTax;
+  
+      setTotal(newTotal);
+      setTax(newTax);
+      setSubtotal(newSubtotal);
+
       console.log("cart items", cartItems)
+     
 
     };
-    fetchCartItems();
+     fetchCartItems();
+   
 
     const shipping = JSON.parse(localStorage.getItem('shipping_info'));
     if (shipping) {
@@ -254,35 +269,26 @@ const CheckoutReviewPage = () => {
   };
 
 
-
   const handleEmailChangeInput = (event) => {
     setEmail(event.target.value); // Assuming setEmail is your state updater function
   };
 
 
-  // // Function to handle form submission
-  // const handleCheckout = (e) => {
-  //   e.preventDefault();
-  //   console.log("info to send pay", paymentInfo)
-  //   console.log("info to send bil", billingInfo)
-  //   console.log("cart items", cartItems)
-
-  //   localStorage.removeItem('shopping_cart');
-  //   localStorage.removeItem('billing_info');
-  //   localStorage.removeItem('shipping_info');
-  //   localStorage.removeItem('email');
-  //  // router.push('/checkoutReview')
-  // };
-
   const handleCheckout = async () => {
-    const orderData = {
-      productSizeColorList: cartItems.map(item => ({
+    let orderData = {
+     
+      productWithImageDTO: cartItems.map(item => ({
         productId: item.productId,
         sizeId: item.sizeId,
         colorId: item.colorId,
-        quantity: item.quantity
+        quantity: item.quantity,
+        // image: {
+        //   productId: item.productId, // Assuming you have access to this
+        //   url: item.imageUrl, // Ensure you have this data in cartItems or fetch if necessary
+        //   id: item.imageId // Assuming you have this data
+        // }
       })),
-      total: totalPrice,
+      total: subtotal, // Ensure you calculate this correctly from the cart items
       shippingAddress: {
         address: shippingInfo.address,
         city: shippingInfo.city,
@@ -304,7 +310,7 @@ const CheckoutReviewPage = () => {
         expYear: parseInt(paymentInfo.expYear),
         expMonth: parseInt(paymentInfo.expMonth),
         cvv: parseInt(paymentInfo.cvv),
-        billingAddress: {
+        billingAddress: {  
           address: billingInfo.address,
           city: billingInfo.city,
           zipCode: billingInfo.zipCode,
@@ -313,8 +319,19 @@ const CheckoutReviewPage = () => {
           state: billingInfo.state
         }
       },
-      orderId: 0 // Assuming if you're tracking orderId prior to creation
+
     };
+    const token = sessionStorage.getItem('token');
+    const userId = sessionStorage.getItem('user'); // Assuming userId is stored in sessionStorage
+    const shopping_cart = sessionStorage.getItem('cartId'); 
+    if (token && userId && shopping_cart) {
+     // Ensures userId is always treated as an integer
+     orderData.cartId = shopping_cart
+     orderData.userId = userId
+      };
+
+
+    console.log("order data", orderData)
 
     try {
       const response = await axios.post('http://localhost:8080/order', orderData);
@@ -340,8 +357,10 @@ const CheckoutReviewPage = () => {
   if (loading) {
     return <div>Loading...</div>;
   }
+
+  
   //calculate totalPrice
-  const totalPrice = cartItems.reduce((acc, product) => acc + (product.price * product.quantity), 0);
+  //const totalPrice = cartItems.reduce((acc, product) => acc + (product.price * product.quantity), 0);
   return (
     <div className="flex justify-center p-8">
       <div className="flex max-w-6xl w-full">
@@ -597,21 +616,21 @@ const CheckoutReviewPage = () => {
 
           <h2 className="text-lg font-bold mb-4">Order Summary</h2>
           <div className="flex justify-between w-full mb-2">
-            <div>Subtotal</div>
-            <div>${totalPrice}</div>
-          </div>
-          <div className="flex justify-between w-full mb-2">
-            <div>Shipping</div>
-            <div>Free</div>
-          </div>
-          <div className="flex justify-between w-full mb-2">
-            <div>Tax</div>
-            <div>$0.00</div>
-          </div>
-          <div className="flex justify-between w-full mb-4">
-            <div>Total</div>
-            <div>${totalPrice}</div>
-          </div>
+                        <div>Subtotal({cartItems.length} items)</div>
+                        <div>${total.toFixed(2)}</div>
+                    </div>
+                    <div className="flex justify-between w-full mb-2">
+                        <div>Shipping</div>
+                        <div>Free</div>
+                    </div>
+                    <div className="flex justify-between w-full mb-2">
+                        <div>Tax</div>
+                        <div>$0{tax.toFixed(2)}</div>
+                    </div>
+                    <div className="flex justify-between w-full mb-4">
+                        <div>Total</div>
+                        <div>${subtotal.toFixed(2)}</div>
+                    </div>
 
         </div>
 

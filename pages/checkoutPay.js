@@ -27,8 +27,14 @@ const CheckoutPay = () => {
         state: '',
         zipCode: 0,
     });
+
+    const [hasBilling, setHasBilling] = useState(false)
     const [showModal, setShowModal] = useState(false);
     const [sameAddress, setSameAddress] = useState(true);
+    const TAX_RATE = 0.053; // 5.3% expressed as a decimal
+    const [total, setTotal] = useState(0);
+    const [tax, setTax] = useState(0);
+    const [subtotal, setSubtotal] = useState(0);
 
     //Function to handle payment input change
     const handlePaymentInputChange = (e) => {
@@ -136,11 +142,13 @@ const CheckoutPay = () => {
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('shopping_cart')) || [];
+        const userId = sessionStorage.getItem('user');
+        const token = sessionStorage.getItem('token');
         const fetchCartItems = async () => {
             const updatedCart = [];
             for (const item of storedCart) {
                 try {                       ///productBySizeColor/{pid}/{sid}/{cid}
-                    const response = await axios.get(`http://localhost:8080/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
+                    const response = await axios.get(`http://localhost:8080/product/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
                     const productInfo = response.data;
                     console.log("info prod", response)
                     const updatedItem = { ...item, ...productInfo, quantity: item.quantity };
@@ -149,24 +157,102 @@ const CheckoutPay = () => {
                     console.error(`Error fetching product with ID ${item.id}:`, error);
                 }
             }
-            setCartItems(updatedCart);
+           // setCartItems(updatedCart);
             console.log("cart items", cartItems)
+            return updatedCart
 
         };
+        const fetchUserData = async () => {
+            if (userId && token) {
+                try {
+                    const response = await axios.get(`http://localhost:8080/user/userRegistration/${userId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    console.log("user info backend", response.data)
+                    return response.data;
+                } catch (error) {
+                    console.error("Failed to fetch user data:", error);
+                    throw error; // Rethrow to handle in Promise.all
+                }
+            }
+        };
+
         fetchCartItems();
 
-        const shippingInfo = JSON.parse(localStorage.getItem('shipping_info'));
-        if (shippingInfo) {
-            setBillingInfo({
-                firstName: shippingInfo.firstName,
-                lastName: shippingInfo.lastName,
-                address: shippingInfo.address,
-                city: shippingInfo.city,
-                state: shippingInfo.state,
-                zipCode: shippingInfo.zipCode,
-            })
-        }
-        setLoading(false);
+        Promise.all([fetchCartItems(), fetchUserData()])
+        .then(([cartItems, userData]) => {
+            setCartItems(cartItems);
+          //  console.log("cartItems,", cartItems)
+            const newTotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+           
+            const newTax = newTotal * TAX_RATE;
+            const newSubtotal = newTotal + newTax;
+        
+            setTotal(newTotal);
+            setTax(newTax);
+            setSubtotal(newSubtotal);
+          
+            if (userData) { // Ensure userData is not undefined
+                console.log("total check", total)
+                setEmail(userData.email);
+                setPaymentInfo({
+                    cardNumber: userData.paymentInformation.ccNumber,
+                    expMonth: userData.paymentInformation.expMonth,
+                    expYear: userData.paymentInformation.expYear,
+                    cvv: userData.paymentInformation.cvv,
+                    
+                });
+                
+                setBillingInfo({
+                    firstName: userData.billingAdress.firstName,
+                    lastName: userData.billingAdress.lastName,
+                    address: userData.billingAdress.address,
+                    city: userData.billingAdress.city,
+                    state: userData.billingAdress.state,
+                    zipCode: userData.billingAdress.zipCode,
+                    
+                });
+
+                if(!userData.billingAdress == null){
+                    setHasBilling(true)
+                }
+            }
+        })
+        .catch(error => {
+            console.error("Error during data fetching:", error);
+        })
+        .finally(() => {
+            console.log("what's the billing address?", billingInfo)
+            console.log("has billing", hasBilling)
+            if(!hasBilling){
+                const shippingInfo = JSON.parse(localStorage.getItem('shipping_info'));
+                if (shippingInfo) {
+                    setBillingInfo({
+                        firstName: shippingInfo.firstName,
+                        lastName: shippingInfo.lastName,
+                        address: shippingInfo.address,
+                        city: shippingInfo.city,
+                        state: shippingInfo.state,
+                        zipCode: shippingInfo.zipCode,
+                    })
+                }
+                
+            }
+            setLoading(false); // Set loading to false when both operations are complete
+        });
+
+        // const shippingInfo = JSON.parse(localStorage.getItem('shipping_info'));
+        // if (shippingInfo) {
+        //     setBillingInfo({
+        //         firstName: shippingInfo.firstName,
+        //         lastName: shippingInfo.lastName,
+        //         address: shippingInfo.address,
+        //         city: shippingInfo.city,
+        //         state: shippingInfo.state,
+        //         zipCode: shippingInfo.zipCode,
+        //     })
+        // }
+        // setLoading(false);
     }, []);
 
     if (loading) {
@@ -308,8 +394,8 @@ const CheckoutPay = () => {
 
                     <h2 className="text-lg font-bold mb-4">Order Summary</h2>
                     <div className="flex justify-between w-full mb-2">
-                        <div>Subtotal</div>
-                        <div>${totalPrice}</div>
+                        <div>Subtotal({cartItems.length} items)</div>
+                        <div>${total.toFixed(2)}</div>
                     </div>
                     <div className="flex justify-between w-full mb-2">
                         <div>Shipping</div>
@@ -317,11 +403,11 @@ const CheckoutPay = () => {
                     </div>
                     <div className="flex justify-between w-full mb-2">
                         <div>Tax</div>
-                        <div>$0.00</div>
+                        <div>$0{tax.toFixed(2)}</div>
                     </div>
                     <div className="flex justify-between w-full mb-4">
                         <div>Total</div>
-                        <div>${totalPrice}</div>
+                        <div>${subtotal.toFixed(2)}</div>
                     </div>
 
                 </div>
