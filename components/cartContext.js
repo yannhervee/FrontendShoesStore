@@ -10,10 +10,14 @@ export function useCart() {
 export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState([]);
 
+    const addItem = ()=>{
+        
+    }
     const loadCart = () => {
         const storedCart = localStorage.getItem('shopping_cart');
         try {
             const items = storedCart ? JSON.parse(storedCart) : [];
+            console.log(">>>ITEMS", items)
             setCartItems(items);
         } catch (error) {
             console.error('Failed to load cart from local storage:', error);
@@ -36,8 +40,8 @@ export const CartProvider = ({ children }) => {
                     'Content-Type': 'application/json'
                 };
                 const response = await axios.get(`http://localhost:8080/user/cart/${userId}`, { headers });
-                if (response.data && response.data.items) {
-                    updateCart(response.data.items);
+                if (response.data && response.data) {
+                    updateCart(response.data);
                      console.log("response after login and fetch", response.data)
       const cartId = response.data[0].cartId; // Assuming the response includes the cartId
 

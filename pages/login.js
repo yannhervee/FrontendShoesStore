@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useCart } from '../components/cartContext';
+import { useDispatch } from 'react-redux';
+import { setUser } from '@/globalRedux/features/userSlice';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
   const { updateCart } = useCart();
-  
 
+  const dispatch = useDispatch()
  
 
   const handleSubmit = async (event) => {
@@ -30,6 +32,8 @@ const LoginPage = () => {
                     //     // Store user information securely in session storage
         sessionStorage.setItem('user', response.data.userId);
         sessionStorage.setItem('firstName', response.data.firstName);
+        console.log("Set user", response.data.firstName)
+        dispatch(setUser(response.data.firstName))
 
         // Fetch and update cart details immediately after login
         await fetchAndUpdateCart();
@@ -54,14 +58,28 @@ const fetchAndUpdateCart = async () => {
         'Content-Type': 'application/json'
       };
       const response = await axios.get(`http://localhost:8080/user/cart/${userId}`, { headers });
-      const cartItems = response.data.items; // Assuming the response contains an array of items
+      let cartItems = response.data; // Assuming the response contains an array of items
       //updateCart(response.data.items);
       console.log("response after login and fetch", response.data)
-      
+      const cartId = response.data[0].cartId;
+      sessionStorage.setItem('cartId', cartId);
       if (response.data) {
-        updateCart(response.data); // Use the updateCart function to update the context and UI
-        const cartId = response.data[0].cartId; // Assuming the response includes the cartId
-        sessionStorage.setItem('cartId', cartId);
+        const cartFromStorage = localStorage.getItem("shopping_cart")
+        if(cartFromStorage){
+          const localCart=JSON.parse(cartFromStorage)
+          cartItems= [...cartItems, ...localCart]
+          for(const item of localCart)
+          { 
+            const body = {...item, userId: parseInt(userId) , cartId }
+            axios.post('http://localhost:8080/user/cart', body, { headers })
+          }
+
+        }
+      
+
+        updateCart(cartItems); // Use the updateCart function to update the context and UI
+       // Assuming the response includes the cartId
+       
     } else {
         updateCart([]); // No items returned, clear the cart
     }

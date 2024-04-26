@@ -5,17 +5,21 @@ import { useCart } from "./cartContext";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { useDispatch, useSelector } from "react-redux";
+import { setUser } from "@/globalRedux/features/userSlice";
 
 const NavBar = () => {
     const [loading, setLoading] = useState(true);
     const [categories, setCategories] = useState([]);
     const router = useRouter();
     const { cartItems } = useCart();
-    const cartItemCount = cartItems.length;
-    const [user, setUser] = useState(null);
+    const cartItemCount = cartItems.reduce((sum, item)=>{return sum + item.quantity}, 0);
+   // const [user, setUser] = useState(null);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
+        const dispatch = useDispatch();
+    const user = useSelector(state=>state.user.user)
     useEffect(() => {
         axios.get("http://localhost:8080/category")
             .then((res) => {
@@ -31,14 +35,14 @@ const NavBar = () => {
         const token = sessionStorage.getItem("token");
         if (token) {
             const name = sessionStorage.getItem("firstName");
-            setUser(name);
+            dispatch(setUser(name));
         }
     }, []);
 
     const handleLogout = () => {
         sessionStorage.clear();  // Clears all sessionStorage data including token and user
         localStorage.removeItem('shopping_cart');  // Clear the shopping cart from local storage
-        setUser(null);
+        dispatch(setUser(null));
         setDropdownOpen(false);
         router.push('/login'); // Redirect to login after logout
     };
