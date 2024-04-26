@@ -7,6 +7,8 @@ const CheckoutShip = () => {
     const [loading, setLoading] = useState(true);
     const [email, setEmail] = useState('');
     const router = useRouter();
+    const TAX_RATE = 0.053; // 5.3% expressed as a decimal
+
     const [shippingInfo, setShippingInfo] = useState({
         firstName: '',
         lastName: '',
@@ -17,18 +19,25 @@ const CheckoutShip = () => {
         phoneNumber: '',
         shippingMethod: 'standard' // You can set a default shipping method here
     });
+   // const [userInfo, setUserInfo] = useState(null);
     const handleEmailChange = (event) => {
         setEmail(event.target.value); // Assuming setEmail is your state updater function
     };
-
+    const [total, setTotal] = useState(0);
+    const [tax, setTax] = useState(0);
+    const [subtotal, setSubtotal] = useState(0);
+    
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('shopping_cart')) || [];
+        const userId = sessionStorage.getItem('user');
+        const token = sessionStorage.getItem('token');
+
         const fetchCartItems = async () => {
             const updatedCart = [];
             for (const item of storedCart) {
                 try {                       ///productBySizeColor/{pid}/{sid}/{cid}
-                    const response = await axios.get(`http://localhost:8080/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
+                    const response = await axios.get(`http://localhost:8080/product/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
                     const productInfo = response.data;
                     console.log("info prod", response)
                     const updatedItem = { ...item, ...productInfo, quantity: item.quantity };
@@ -37,12 +46,67 @@ const CheckoutShip = () => {
                     console.error(`Error fetching product with ID ${item.id}:`, error);
                 }
             }
-            setCartItems(updatedCart);
-            console.log("cart items", cartItems)
-            setLoading(false);
+            //setCartItems(updatedCart);
+            console.log("here in checkout", updatedCart)
+            return updatedCart
+          //  console.log("cart items", cartItems)
+          //  setLoading(false);
         };
-        fetchCartItems();
+        const fetchUserData = async () => {
+            if (userId && token) {
+                try {
+                    const response = await axios.get(`http://localhost:8080/user/userRegistration/${userId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    return response.data;
+                } catch (error) {
+                    console.error("Failed to fetch user data:", error);
+                    throw error; // Rethrow to handle in Promise.all
+                }
+            }
+        };
+
+    
+
+        //fetchCartItems();
+
+        Promise.all([fetchCartItems(), fetchUserData()])
+        .then(([cartItems, userData]) => {
+            setCartItems(cartItems);
+          //  console.log("cartItems,", cartItems)
+            const newTotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+           
+            const newTax = newTotal * TAX_RATE;
+            const newSubtotal = newTotal + newTax;
+        
+            setTotal(newTotal);
+            setTax(newTax);
+            setSubtotal(newSubtotal);
+          
+            if (userData) { // Ensure userData is not undefined
+                console.log("total check", total)
+                setEmail(userData.email);
+                setShippingInfo({
+                    firstName: userData.shippingAddress.firstName,
+                    lastName: userData.shippingAddress.lastName,
+                    address: userData.shippingAddress.address,
+                    city: userData.shippingAddress.city,
+                    state: userData.shippingAddress.state,
+                    zipCode: userData.shippingAddress.zipCode,
+                    phoneNumber: userData.mobile,
+                    shippingMethod: 'standard'
+                });
+            }
+        })
+        .catch(error => {
+            console.error("Error during data fetching:", error);
+        })
+        .finally(() => {
+            setLoading(false); // Set loading to false when both operations are complete
+        });
+
     }, []);
+
 
 
     // Function to handle form submission
@@ -65,8 +129,6 @@ const CheckoutShip = () => {
         return <div>Loading...</div>;
     }
 
-    // Calculate total price
-    const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     return (
         <div className="flex justify-center p-8">
             <div className="flex max-w-6xl w-full">
@@ -81,6 +143,7 @@ const CheckoutShip = () => {
                             <input id="email" type="email" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Email"
                                 onChange={handleEmailChange} // Linking to our change handler
                                 name="email"
+                                value={email}
                                 required />
                         </div>
 
@@ -89,6 +152,7 @@ const CheckoutShip = () => {
                                 <label htmlFor="first_name" className="text-sm font-semibold mb-1">First Name</label>
                                 <input id="first_name" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your first name"
                                     onChange={handleInputChange}
+                                    value={shippingInfo.firstName}
                                     name="firstName"
                                     required
                                 />
@@ -97,6 +161,7 @@ const CheckoutShip = () => {
                                 <label htmlFor="last_name" className="text-sm font-semibold mb-1">Last Name</label>
                                 <input id="last_name" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your last name"
                                     onChange={handleInputChange}
+                                    value={shippingInfo.lastName}
                                     name="lastName"
                                     required />
                             </div>
@@ -107,6 +172,7 @@ const CheckoutShip = () => {
                             <label htmlFor="address" className="text-sm font-semibold mb-1">Address</label>
                             <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your first name"
                                 onChange={handleInputChange}
+                                value={shippingInfo.address}
                                 name="address"
                                 required />
                         </div>
@@ -114,6 +180,7 @@ const CheckoutShip = () => {
                             <label htmlFor="city" className="text-sm font-semibold mb-1">City</label>
                             <input id="city" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your first name"
                                 onChange={handleInputChange}
+                                value={shippingInfo.city}
                                 name="city"
                                 required />
                         </div>
@@ -121,6 +188,7 @@ const CheckoutShip = () => {
                             <div className="flex flex-col flex-1">
                                 <label htmlFor="state" className="text-sm font-semibold mb-1">State</label>
                                 <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your first name"
+                                    value={shippingInfo.state}
                                     onChange={handleInputChange}
                                     name="state"
                                     required />
@@ -141,6 +209,7 @@ const CheckoutShip = () => {
                             <label htmlFor="phone_number" className="text-sm font-semibold mb-1">Phone Number</label>
                             <input id="phone_number" className="border border-gray-300 rounded-md py-2 px-3 w-1/2 focus:outline-none focus:border-blue-500" placeholder="Enter your phone number"
                                 name="phoneNumber"
+                                value={shippingInfo.phoneNumber}
                                 type="text" // Changed to number
                                 onChange={handleInputChange}
 
@@ -170,7 +239,7 @@ const CheckoutShip = () => {
 
                     <div className="flex justify-between w-full mb-2">
                         <div>Subtotal({cartItems.length} items)</div>
-                        <div>${subtotal.toFixed(2)}</div>
+                        <div>${total.toFixed(2)}</div>
                     </div>
                     <div className="flex justify-between w-full mb-2">
                         <div>Shipping</div>
@@ -178,7 +247,7 @@ const CheckoutShip = () => {
                     </div>
                     <div className="flex justify-between w-full mb-2">
                         <div>Tax</div>
-                        <div>$0.00</div>
+                        <div>$0{tax.toFixed(2)}</div>
                     </div>
                     <div className="flex justify-between w-full mb-4">
                         <div>Total</div>
