@@ -36,6 +36,7 @@ const CheckoutShip = () => {
         const fetchCartItems = async () => {
             const updatedCart = [];
             for (const item of storedCart) {
+                 console.log("item ", item)
                 try {                       ///productBySizeColor/{pid}/{sid}/{cid}
                     const response = await axios.get(`http://localhost:8080/product/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
                     const productInfo = response.data;

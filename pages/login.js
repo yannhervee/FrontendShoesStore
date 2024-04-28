@@ -37,6 +37,8 @@ const LoginPage = () => {
                     //     // Store user information securely in session storage
         sessionStorage.setItem('user', response.data.userId);
         sessionStorage.setItem('firstName', response.data.firstName);
+        console.log("set cartId", response.data.cartId);
+        sessionStorage.setItem('cartId', response.data.cartId);
         console.log("Set user", response.data.firstName)
         dispatch(setUser(response.data.firstName))
 
@@ -44,7 +46,7 @@ const LoginPage = () => {
         await fetchAndUpdateCart();
             
             // Redirect to home page or user profile page
-       //   router.push('productListing');
+         router.push('productListing');
         
         // Navigate to another page or clear the form
     } catch (error) {
@@ -65,10 +67,11 @@ const fetchAndUpdateCart = async () => {
       const response = await axios.get(`http://localhost:8080/user/cart/${userId}`, { headers });
       let cartItems = response.data; // Assuming the response contains an array of items
       //updateCart(response.data.items);
-      console.log("response after login and fetch", response.data)
-      const cartId = response.data[0].cartId;
-      sessionStorage.setItem('cartId', cartId);
+      console.log("response after login and fetch cart", response.data)
+     // const cartId = response.data.cartId;
+    //  sessionStorage.setItem('cartId', cartId);
       if (response.data) {
+        //console.log("check what backend returns", response.data)
         const cartFromStorage = localStorage.getItem("shopping_cart")
         if(cartFromStorage){
           const localCart=JSON.parse(cartFromStorage)
