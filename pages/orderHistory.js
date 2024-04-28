@@ -80,7 +80,7 @@ const OrderHistoryPage = () => {
         </div>
 
         {order.map((order) => (
-          <Link href={`/order/${order.orderId}`} passHref>
+        <Link href={`/order/${order.orderId}`} passHref>
           <div key={order.orderId} className="border-b py-6">
             <div className="flex justify-between items-center mb-4">
               <div className="font-bold">Order # {order.orderId}</div>
