@@ -469,9 +469,6 @@ const ProfilePage = () => {
   };
 
 
-
-
-
   return (
     <div className="bg-gray-200 min-h-screen p-8">
       <div className="flex justify-between items-center border-b pb-4">
