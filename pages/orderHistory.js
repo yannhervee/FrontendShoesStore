@@ -74,8 +74,8 @@ const OrderHistoryPage = () => {
         <div className="flex justify-between items-center border-b pb-4">
           <h1 className="text-3xl font-bold">Orders</h1>
           <div>
-            <button className="px-4 py-2 rounded border border-gray-300 mr-2">Profile</button>
-            <button className="px-4 py-2 rounded bg-black text-white">Orders</button>
+            <Link className="px-4 py-2 rounded border border-gray-300 mr-2" href={"/userProfile/"} passHref>Profile</Link>
+            <button className="px-4 py-2 rounded bg-black text-white" >Orders</button>
           </div>
         </div>
 
