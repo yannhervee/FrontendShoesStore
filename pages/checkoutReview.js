@@ -3,10 +3,11 @@ import axios from 'axios';
 import { useRouter } from 'next/router';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useCart } from '@/components/cartContext';
 
 const CheckoutReviewPage = () => {
   // Sample data
-
+  const { updateCart } = useCart();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -341,6 +342,8 @@ const CheckoutReviewPage = () => {
       localStorage.removeItem('shipping_info');
       localStorage.removeItem('payment_info');
       localStorage.removeItem('email');
+      updateCart([]); 
+      
       router.push({
         pathname: '/orderConfirmation',
         query: { orderNumber: response.data.orderId }, // Pass as a query param

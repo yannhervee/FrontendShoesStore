@@ -12,7 +12,7 @@ const NavBar = () => {
     const [loading, setLoading] = useState(true);
     const [categories, setCategories] = useState([]);
     const router = useRouter();
-    const { cartItems } = useCart();
+    const { cartItems, updateCart } = useCart();
     const cartItemCount = cartItems.reduce((sum, item)=>{return sum + item.quantity}, 0);
    // const [user, setUser] = useState(null);
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -44,6 +44,8 @@ const NavBar = () => {
         localStorage.removeItem('shopping_cart');  // Clear the shopping cart from local storage
         dispatch(setUser(null));
         setDropdownOpen(false);
+        updateCart([]);
+        
         router.push('/login'); // Redirect to login after logout
     };
 

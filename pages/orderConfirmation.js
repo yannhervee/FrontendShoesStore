@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 const OrderConfirmationPage = () => {
  
   const router = useRouter();
@@ -27,12 +28,12 @@ const OrderConfirmationPage = () => {
             <h3 className="text-lg font-semibold text-green-800">Estimated Delivery Date</h3>
             <p className="text-sm">{deliveryDate}</p>
           </div>
-          <button
-            type="button"
+          <Link
+            href={`/order/${orderNumber}`} passHref
             className="mt-4 w-full bg-green-600 text-white font-bold py-2 px-4 rounded hover:bg-green-700 focus:outline-none focus:shadow-outline"
           >
             View Order
-          </button>
+          </Link>
         </div>
       </div>
     </div>
