@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import { useCart } from '@/components/cartContext';
+import AuthPromptModal from '@/components/guesModal';
+
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { updateCart, updateItemQuantity, removeItem } = useCart();
+  const [showModal, setShowModal] = useState(false);
   useEffect(() => {
     const fetchCartItems = async () => {
       setLoading(true);
@@ -178,15 +181,23 @@ const removeFromCart = (productId, sizeId, colorId) => {
   };
   
 
-const handleCheckout = () => {
+const handleCheckout = (e) => {
     // Perform actions for checkout
     // For example, clear the cart
    // setCartItems([]);
    // localStorage.removeItem('shopping_cart');
-  
+    e.preventDefault();
     // Display a confirmation message
    // alert('Thank you for your purchase! Your order has been placed.');
+   const token = sessionStorage.getItem('token');
+   const userId = sessionStorage.getItem('user');
+
+   if (!token || !userId) {
+    console.log("here")
+      setShowModal(true); 
+   }else{
     router.push("/checkoutShip");
+   }
     // Optionally, redirect the user to the checkout page
     // router.push('/checkout'); // Assuming you're using Next.js router
   };
@@ -241,6 +252,7 @@ const handleCheckout = () => {
             <div>${totalPrice.toFixed(2)}</div>
           </div>
           <button className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800" onClick={handleCheckout}>Checkout</button>
+          <AuthPromptModal isOpen={showModal} onClose={() => setShowModal(false)} />
         </div>
       </div>
     </div>
