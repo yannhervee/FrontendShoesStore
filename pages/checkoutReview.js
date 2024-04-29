@@ -342,6 +342,7 @@ const CheckoutReviewPage = () => {
       localStorage.removeItem('shipping_info');
       localStorage.removeItem('payment_info');
       localStorage.removeItem('email');
+      localStorage.removeItem('guest');
       updateCart([]); 
       
       router.push({

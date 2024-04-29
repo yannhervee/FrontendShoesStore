@@ -14,8 +14,8 @@ const ProductDetailsPage = () => {
   const [availableColors, setAvailableColors] = useState([]);
   const [currentImages, setCurrentImages] = useState([]);
   const { updateCart } = useCart();
-
-
+  const[ecoImpact, setEcoImpact] = useState([]);
+  
 
   const router = useRouter();
   const { id } = router.query; // Get the product ID from the URL
@@ -27,6 +27,7 @@ const ProductDetailsPage = () => {
       try {
         const response = await axios.get(`http://localhost:8080/product/${id}`);
         setProduct(response.data);
+        
        
         setCurrentImages(response.data.images); // Initial image set up
         console.log("products", response.data);
@@ -50,19 +51,6 @@ const ProductDetailsPage = () => {
       console.log("colors available", initialColors)
       
 
-      // Set default selected size if available and default colors for that size
-      // if (initialSizes.length > 0) {
-      //   setSelectedSize(initialSizes[0]);
-      //   const colorsForSize = response.data.sizeColorDTO.find(sc => sc.size.id === initialSizes[0].id)?.color.map(c => ({
-      //     ...c.color,
-      //     quantity: c.quantity
-      //   }));
-      //   console.log("colors available", colorsForSize)
-      //   setAvailableColors(colorsForSize);
-      // }
-     // setLoading(false);
-
-
         // Set default selected size
         if (response.data.sizeColorDTO.length > 0) {
           setSelectedSize(response.data.sizeColorDTO[0].size.size);
@@ -73,22 +61,7 @@ const ProductDetailsPage = () => {
       } finally{
         setLoading(false);
       }
-      // fetch('http://localhost:8080/sizes')
-      //   .then(response => response.json())
-      //   .then(data => {
-      //     console.log("data for sizes", data);
-      //     setAvailableSizes(data)
-      //   })
-      //   .catch(error => console.error('Failed to load sizes:', error));
-
-      // // Fetch colors
-      // fetch('http://localhost:8080/colors')
-      //   .then(response => response.json())
-      //   .then(data => {
-      //     console.log("data for colors", data);
-      //     setAvailableColors(data)
-      //   })
-      //   .catch(error => console.error('Failed to load colors:', error));
+ 
     };
 
     if (id) {
@@ -277,9 +250,7 @@ if (token && userId) {
         alert('Failed to save item in the cart. Please try again.');
     });
 }
-
-   
-       
+     
 
      // router.push("/cart");
     } catch (error) {
@@ -313,8 +284,8 @@ if (token && userId) {
             <p className="text-gray-600">Support fair labor practices and humane working conditions.</p>
           </div>
           <div>
-            <p className="font-medium">3. Reduce Waste</p>
-            <p className="text-gray-600">Contribute to reducing landfill waste with biodegradable components.</p>
+            <p className="font-medium">3. This Product</p>
+            <p className="text-green-600">{product.productEcoImpactInformation[0].ecoImpact}</p>
           </div>
         </div>
 
@@ -343,24 +314,6 @@ if (token && userId) {
         <div class="relative p-0 w-512 mr-24">
           {/* <img src="https://via.placeholder.com/400" alt="Main product" className="w-full rounded-lg mb-4" /> */}
           <ImageSlider images={currentImages} className="w-full rounded-lg mb-4" />
-
-
-          {/* Left arrow */}
-          {/* <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-8">
-          <div className="bg-white rounded-full p-2 cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </div>
-        </div> */}
-          {/* Right arrow */}
-          {/* <div className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-8">
-          <div className="bg-white rounded-full p-2 cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </div>
-        </div> */}
         </div>
 
         {/* Product Information */}
@@ -379,17 +332,6 @@ if (token && userId) {
             <div className="flex mt-2">
             {renderSizeOptions()}
 
-              {/* {availableSizes.map((size) => (
-                <button
-                  key={size}
-                  className={`disabled:text-white disabled:bg-gray-600 border border-gray-300 rounded-md py-2 px-4 mr-2 ${selectedSize === size ? 'bg-black text-white' : ''
-                    }`}
-                  disabled={!uniqueSizes.find(s => s === size.size)}
-                  onClick={() => handleSizeClick(size)}
-                >
-                  {size.size}
-                </button>
-              ))} */}
             </div>
           </div>
           {/* Color Options */}
@@ -397,17 +339,7 @@ if (token && userId) {
             <label className="font-medium">Select Color:</label>
             <div className="flex mt-2 flex-wrap mb-8">
             {renderColorOptions()}
-              {/* {availableColors.map((color) => (
-                <button
-                  key={color.color}
-                  className={`disabled:text-white disabled:bg-gray-600 border border-gray-300 rounded-md py-2 px-4 mr-2 ${selectedColor === color ? 'border-red-300' : ''}`}
-                  style={{ width: '80px', height: '40px' }}
-                  onClick={() => handleColorClick(color)}
-                  disabled={!product.sizeColorDTO.some((sizeColor) => sizeColor.color.some((colorInfo) => colorInfo.color.color === color.color && colorInfo.quantity > 0))}
-                >
-                  {color.color}
-                </button>
-              ))} */}
+           
             </div>
           </div>
 
