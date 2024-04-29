@@ -46,7 +46,13 @@ const LoginPage = () => {
         await fetchAndUpdateCart();
             
             // Redirect to home page or user profile page
-         router.push('productListing');
+          const guest = localStorage.getItem("guest");
+          if(guest){
+            router.push('/cart')
+          }
+          else{
+         router.push('/productListing');
+          }
         
         // Navigate to another page or clear the form
     } catch (error) {
@@ -56,7 +62,8 @@ const LoginPage = () => {
 };
 const fetchAndUpdateCart = async () => {
   const token = sessionStorage.getItem('token');
-  const userId = sessionStorage.getItem('user'); // Ensure this key matches your session storage for userId
+  const userId = sessionStorage.getItem('user');
+ const cartId = sessionStorage.getItem("cartId")
 
   if (token && userId) {
     try {
@@ -68,8 +75,7 @@ const fetchAndUpdateCart = async () => {
       let cartItems = response.data; // Assuming the response contains an array of items
       //updateCart(response.data.items);
       console.log("response after login and fetch cart", response.data)
-     // const cartId = response.data.cartId;
-    //  sessionStorage.setItem('cartId', cartId);
+   
       if (response.data) {
         //console.log("check what backend returns", response.data)
         const cartFromStorage = localStorage.getItem("shopping_cart")
