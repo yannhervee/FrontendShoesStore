@@ -5,6 +5,7 @@ import { useCart } from '../components/cartContext';
 import { useDispatch } from 'react-redux';
 import { setUser } from '@/globalRedux/features/userSlice';
 import CryptoJS from 'crypto-js';
+import Link from 'next/link';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -161,9 +162,9 @@ const fetchAndUpdateCart = async () => {
 
           <div className="flex items-center justify-between">
             <div className="text-sm">
-              <a href="#" className="font-medium text-green-600 hover:text-green-500">
+              <Link href="/resetPassword" className="font-medium text-green-600 hover:text-green-500">
                 Forgot your password?
-              </a>
+              </Link>
             </div>
           </div>
 
