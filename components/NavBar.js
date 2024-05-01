@@ -41,7 +41,8 @@ const NavBar = () => {
 
     const handleLogout = () => {
         sessionStorage.clear();  // Clears all sessionStorage data including token and user
-        localStorage.removeItem('shopping_cart');  // Clear the shopping cart from local storage
+        localStorage.removeItem('shopping_cart'); 
+        localStorage.clear(); // Clear the shopping cart from local storage
         dispatch(setUser(null));
         setDropdownOpen(false);
         updateCart([]);

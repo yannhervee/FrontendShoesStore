@@ -41,8 +41,10 @@ const ProfilePage = () => {
 
   const [showModalEmail, setShowModalEmail] = useState(false);
   const [showModalName, setShowModalName] = useState(false);
-  const[bilId, setBillId] = useState(0)
+  const [bilId, setBillId] = useState(0)
   const router = useRouter();
+  const [password, setPassword] = useState('');
+  const [user, setUser] = useState({});
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -60,12 +62,18 @@ const ProfilePage = () => {
         });
         console.log('User data fetched successfully:', response); // Log the response data
         const userData = response.data;
-        
+        setUser(response.data)
+
 
         setEmail(userData.email || '');
         setFirstName(userData.firstName || '');
         setLastName(userData.lastName || '');
         setBillId(userData.billingAddress.id)
+        if (response.data.billingAddress == null) {
+          setHasBilling(false);
+      } else {
+          setHasBilling(true);
+      }
 
         // Check if shippingAddress is not null, otherwise set to default values
         setShippingInfo(userData.shippingAddress ? {
@@ -170,74 +178,87 @@ const ProfilePage = () => {
     const token = sessionStorage.getItem('token');
 
     if (!token || !userId) {
-        alert('Authentication error. Please log in again.');
-        router.push('/login'); // Redirect to login page if the user is not authenticated
-        return;
+      alert('Authentication error. Please log in again.');
+      router.push('/login'); // Redirect to login page if the user is not authenticated
+      return;
     }
 
     // Ensure the names are not empty before sending to the server
     if (!firstName.trim() || !lastName.trim()) {
-        alert('First name and last name cannot be empty.');
-        return;
+      alert('First name and last name cannot be empty.');
+      return;
     }
 
     try {
-        const response = await axios.put(`http://localhost:8080/user/updateUserName/${userId}`, {
-            firstName,
-            lastName
-        }, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        console.log('Name updated successfully:', response.data);
-        alert('Name updated successfully!');
-        setShowModalName(false); // Assuming you are using a modal and have a state to control its visibility
+      const response = await axios.put(`http://localhost:8080/user/updateUserName/${userId}`, {
+        firstName,
+        lastName
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log('Name updated successfully:', response.data);
+      alert('Name updated successfully!');
+      setShowModalName(false); // Assuming you are using a modal and have a state to control its visibility
     } catch (error) {
-        console.error('Failed to update name:', error);
-        alert('Failed to update name. Please try again.');
+      console.error('Failed to update name:', error);
+      alert('Failed to update name. Please try again.');
     }
-};
+  };
 
 
   // Function to handle the edit email change
-  const handleEmailChange = async(e) => {
+  const handleEmailChange = async (e) => {
 
     e.preventDefault();
     const userId = sessionStorage.getItem('user');
     const token = sessionStorage.getItem('token');
 
+
     if (!token || !userId) {
-        alert('Authentication error. Please log in again.');
-        router.push('/login'); // Redirect to login page if the user is not authenticated
-        return;
+      alert('Authentication error. Please log in again.');
+      router.push('/login'); // Redirect to login page if the user is not authenticated
+      return;
     }
 
     // Ensure the email is not empty before sending to the server
-    if (!email) {
-        alert('Email cannot be empty.');
-        return;
+    if (!password) {
+      alert('password cannot be empty.');
+      return;
     }
+    console.log("password sent", passData)
 
     try {
-        const response = await axios.put(`http://localhost:8080/user/updateEmail/${userId}`, { email }, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        console.log('Email updated successfully:', response.data);
-        alert('Email updated successfully!');
-        setShowModalEmail(false); // Close the modal on success
+      const response = await axios.put(`http://localhost:8080/updatePassword/${userId}`, { password: password }, {
+
+      });
+      console.log('password updated successfully:', response.data);
+      alert('password updated successfully!');
+      setShowModalEmail(false); // Close the modal on success
     } catch (error) {
-        console.error('Failed to update email:', error);
-        alert('Failed to update email. Please try again.');
+      console.error('Failed to update password:', error);
+      alert('Failed to update password. Please try again.');
     }
 
-    
+
 
   };
 
+  
   // Function to handle the edit shiiping information action
   const handleEditPaymentInfo = async (e) => {
     e.preventDefault();
+    if(user.billingAddress== null){
+      console.log("detecting null")
+      alert('Failed to update payment information. Please add a billing address first');
+
+      return;
+    }else{
+      console.log("nothing detected")
+    
+    
     const userId = sessionStorage.getItem('user');
     const token = sessionStorage.getItem('token');
+    console.log("continue?")
 
     if (!token || !userId) {
       alert('Authentication error. Please log in again.');
@@ -260,23 +281,19 @@ const ProfilePage = () => {
         state: billingInfo.state,
       }
     };
-    // try {
-    //   const response = await axios.post(`http://localhost:8080/user/userPaymentInformation/${userId}`, {
-    //     paymentInformation: paymentData
-    //   }, {
-    //     headers: { Authorization: `Bearer ${token}` }
-    //   });
+  
     try {
       const response = await axios.post(`http://localhost:8080/user/userPaymentInformation/${userId}`, paymentData, {
-          headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       console.log('Payment information updated successfully:', response.data);
       alert('Payment information updated successfully!');
       setPaymentInfo(paymentInfo);
       setShowModalPayment(false);
-  } catch (error) {
+    } catch (error) {
       console.error('Failed to update payment information:', error);
-      alert('Failed to update payment information. Please try again.');
+      alert('Failed to update payment information. Please add a billing address first');
+    }
   }
 
 
@@ -349,7 +366,7 @@ const ProfilePage = () => {
       return;
     }
 
-    const billingData = {     
+    const billingData = {
       address: billingInfo.address,
       city: billingInfo.city,
       zipCode: billingInfo.zipCode,
@@ -365,6 +382,7 @@ const ProfilePage = () => {
       console.log('Billing address updated successfully:', response.data);
       alert('Billing address updated successfully!');
       setBillingInfo(billingInfo);
+      setHasBilling(true)
       setShowModalBilling(false); // Close the modal on successful update
 
     } catch (error) {
@@ -377,20 +395,8 @@ const ProfilePage = () => {
 
 
   const handleCancelModalPayment = () => {
-    // Implement modal logic to edit billing information
 
 
-
-    // setBillingInfo({
-    //   firstName: billing.firstName,
-    //   lastName: billing.lastName,
-    //   address: billing.address,
-    //   city: billing.city,
-    //   state: billing.state,
-    //   zipCode: billing.zipCode,
-    // });
-
-    console.log("Billing info cancel", billingInfo);
     setShowModalPayment(false);
 
   };
@@ -416,25 +422,25 @@ const ProfilePage = () => {
 
   };
 
-    //cancel shipping modal
-    const handleCancelModalBilling = () => {
+  //cancel shipping modal
+  const handleCancelModalBilling = () => {
 
-      console.log("Handling cancellation of billinh info form");
-  
-  
-      // setShippingInfo({
-      //   firstName: shipping.firstName,
-      //   lastName: shipping.lastName,
-      //   address: shipping.address,
-      //   city: shipping.city,
-      //   state: shipping.state,
-      //   zipCode: shipping.zipCode,
-      // })
-  
-      console.log("Shipping info cancel", shippingInfo);
-      setShowModalBilling(false);
-  
-    };
+    console.log("Handling cancellation of billinh info form");
+
+
+    // setShippingInfo({
+    //   firstName: shipping.firstName,
+    //   lastName: shipping.lastName,
+    //   address: shipping.address,
+    //   city: shipping.city,
+    //   state: shipping.state,
+    //   zipCode: shipping.zipCode,
+    // })
+
+    console.log("Shipping info cancel", shippingInfo);
+    setShowModalBilling(false);
+
+  };
 
   // cancel modal email
   const handleCancelModalEmail = () => {
@@ -447,7 +453,7 @@ const ProfilePage = () => {
     //   setEmail(em)
     // }
     // console.log("email", email);
-
+    setPassword("");
     setShowModalEmail(false);
 
   };
@@ -469,15 +475,16 @@ const ProfilePage = () => {
   };
 
 
+
   return (
     <div className="bg-gray-200 min-h-screen p-8">
       <div className="flex justify-between items-center border-b pb-4">
-          <h1 className="text-3xl font-bold">My Profile</h1>
-          <div>
-            <button className="px-4 py-2 rounded bg-black text-white" >Profile</button>
-            <Link className="px-4 py-2 rounded border border-gray-300 mr-2" href={"/orderHistory/"} passHref>Orders</Link>
-          </div>
+        <h1 className="text-3xl font-bold">My Profile</h1>
+        <div>
+          <button className="px-4 py-2 rounded bg-black text-white" >Profile</button>
+          <Link className="px-4 py-2 rounded border border-gray-300 mr-2" href={"/orderHistory/"} passHref>Orders</Link>
         </div>
+      </div>
 
       <div className="max-w-6xl mx-auto shadow-lg rounded-lg overflow-hidden md:flex md:space-x-4 bg-gray-200">
 
@@ -515,13 +522,15 @@ const ProfilePage = () => {
 
 
             </div>
-            <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded"
+            <button className="bg-blue-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded"
               onClick={(e) => {
                 e.preventDefault();
                 setShowModalEmail(true);
               }}
-            >Edit</button>
+            >Edit Password </button>
           </div>
+
+
 
           <div className="flex justify-between items-center border-b py-4">
             <div>
@@ -552,19 +561,23 @@ const ProfilePage = () => {
               {paymentInfo.cardNumber ? (
                 <>
                   <p className="text-grey-800">Card Number: ****-****-****-{paymentInfo.cardNumber.toString().slice(-2)}</p>
-                
+
                 </>
               ) : (
                 <p className="text-grey-800 italic">No card saved.</p>
               )}
             </div>
-            <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded"
-              onClick={(e) => {
-                e.preventDefault();
-                setShowModalPayment(true);
-              }}>
-              Edit
-            </button>
+            <button 
+    className="text-white text-sm font-bold py-1 px-4 rounded bg-green-500 hover:bg-green-700'"
+  
+    onClick={(e) => {
+        e.preventDefault();
+      
+            setShowModalPayment(true);
+        
+    }}>
+    Edit
+</button>
           </div>
 
           <div className="flex justify-between items-center border-b py-4">
@@ -692,8 +705,8 @@ const ProfilePage = () => {
               <form onSubmit={handleEmailChange} className="space-y-4">
 
                 <div className="flex flex-col">
-                  <label htmlFor="address" className="text-sm font-semibold mb-1">email</label>
-                  <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your address" onChange={(e) => setEmail(e.target.value)} name="email" required />
+                  <label htmlFor="address" className="text-sm font-semibold mb-1">password</label>
+                  <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your address" onChange={(e) => setPassword(e.target.value)} name="email" required />
                 </div>
 
                 {/* Add more form fields for shipping information as needed */}
@@ -772,9 +785,9 @@ const ProfilePage = () => {
                 <div className="flex flex-col flex-1 mb-16">
                   <label htmlFor="cvv" className="text-sm font-semibold mb-1">CVV</label>
                   <input id="cvv" type="text" className="border border-gray-300 rounded-md py-2 px-3 w-1/2 focus:outline-none focus:border-blue-500" placeholder="Enter CVV"
-                  name="cvv"
+                    name="cvv"
                     onChange={handlePaymentInputChange}
-                   required />
+                    required />
                 </div>
 
 
