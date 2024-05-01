@@ -131,6 +131,13 @@ const NavBar = () => {
                             </span>
                         </Link>
                     </div>
+                    <div className=" ml-8 underline">
+                        <Link href="/checkOrder">
+                            <span className="hover:underline px-4 py-2 text-lg">
+                                Check Order
+                            </span>
+                        </Link>
+                    </div>
                 </div>
             </div>
 
@@ -149,6 +156,8 @@ const NavBar = () => {
                             </div>
                         ))
                     )}
+                  
+
                 </div>
             </nav>
         </header>

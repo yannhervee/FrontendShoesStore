@@ -260,7 +260,6 @@ if (token && userId) {
 
   };
 
- 
   if (loading || !product) {
     return <div>Loading...</div>;
   }
