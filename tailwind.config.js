@@ -14,13 +14,13 @@ module.exports = {
         
       },
       width: {
-        '512': '512px',  // Key can be any name, but using the pixel value helps remember what it does
+        '512': '512px',  
         '150': '150px',
         '250': '250px',
         
       },
       height: {
-        '512': '512px',  // Key can be any name, but using the pixel value helps remember what it does
+        '512': '512px',  
         '150': '150px',
         '250': '250px',
       },
@@ -29,6 +29,13 @@ module.exports = {
         'home-left': "url('/img1.png')",
         'home-right': "url('/img2.png')",
       },
+      colors: {
+        'pastel-pink': '#ffdfd5',
+        'pastel-pink-dark': '#fcbdb0',
+        'pastel-blue': '#a7c7e7',  
+        'pastel-green': '#bdecb6',
+        'pastel-green-dark': '#8cbf88'
+      }
     },
   },
   plugins: [],

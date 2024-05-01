@@ -3,6 +3,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import SalesHighlight from "@/components/saleHilight";
 
 const ProductByCategory = () => {
   const router = useRouter();
@@ -80,6 +81,8 @@ const ProductByCategory = () => {
 
 
   return (
+    <>
+    <SalesHighlight/>
     <div className="container mx-auto mt-8 flex ml-0">
     <LeftMenu onFilterChange={handleFilterChange} />
     <div className="flex-1 ml-4 mr-4, ml-32">
@@ -108,6 +111,7 @@ const ProductByCategory = () => {
       </div>
     </div>
   </div>
+  </>
   );
 };
 

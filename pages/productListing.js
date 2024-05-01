@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import LeftMenu from "@/components/leftMenu";
 import axios from "axios";
 import Link from "next/link";
+import SalesHighlight from "@/components/saleHilight";
 
 
 const Products = () => {
@@ -75,26 +76,31 @@ const Products = () => {
   }
 
   return (
+    <>
+    <SalesHighlight/>
     <div className="container mx-auto mt-8 flex ml-0">
       <LeftMenu onFilterChange={handleFilterChange} />
+      
+
       <div className="flex-1 ml-4 mr-4, ml-32">
         <h1 className="text-3xl font-bold mb-4">Women’s Eco Friendly Shoes</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {loading ? (
             <div>Loading...</div>
           ) : (
-             filteredProducts.map((product) => (
+            filteredProducts.map((product) => (
               <Link key={product.productId} href={`/products/${product.productId}`} passHref>
-              <div key={product.productId} className="bg-green-500 p-4 rounded-md overflow-hidden block">
-                <div className="h-250 w-full mb-4">
-                <img src={product.image.url} alt={"shoes image"} className="w-full h-full object-contain rounded-lg mb-4" />
-                  
+                <div key={product.productId} className="bg-white hover:bg-green-600 p-4 rounded-md overflow-hidden block transition-colors duration-300">
+                  <div className="h-64 w-full mb-4">
+                    <img src={product.image.url} alt={"shoes image"} className="w-full h-full object-contain rounded-lg mb-4" />
+                  </div>
+                  <p className="text-gray-900 font-bold text-lg">{product.name}</p>
+                  <p className="text-gray-500">{product.category}</p>
+                  <p className="text-black font-bold">${product.price}</p>
                 </div>
-                <p className="text-white font-bold text-lg">{product.name}</p>
-                <p className="text-gray-300">{product.category}</p>
-                <p className="text-green-400 font-bold">${product.price}</p>
-              </div>
               </Link>
+            
+            
             ))
 
             
@@ -103,6 +109,7 @@ const Products = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

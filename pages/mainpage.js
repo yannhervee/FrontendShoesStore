@@ -8,7 +8,6 @@ export default function Main() {
     <div className="flex flex-col min-h-screen">
    
      
-
       {/* Main content */}
       <main className="flex-grow grid grid-cols-2">
         {/* Hero section */}
@@ -33,25 +32,17 @@ export default function Main() {
         {/* Call to action section */}
         <div className='flex flex-col flex-grow bg-home-right'>
           <div className='h-screen flex items-center justify-center p-6 rounded-lg'>
-        <section className="flex items-center justify-center p-6 bg-gray-200 rounded-lg mx-4"
-        style={{
-          backgroundImage: 'url("C:\Users\admin\OneDrive\Pictures\Screenshots\Rectangle 4.png")',
-          backgroundPosition: 'center',
-          backgroundSize: 'cover',
-          backgroundRepeat: 'no-repeat',
-        
-        }}
-        >
+        <section className="flex items-center justify-center p-6 bg-gray-200 rounded-lg mx-4">
           
           <div className="text-center w-full"> {/* Adjust width as necessary */}
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Fashion with a conscience</h2>
           <p className="text-gray-600 mb-6">Eco-Friendly shoes for Women</p>
-          <a href="/productListing">
+         
 
-        <button className="bg-green-800 text-white font-bold py-2 px-6 rounded hover:bg-green-600 focus:outline-none focus:shadow-outline">
+        <Link href="/productListing"className="bg-green-800 text-white font-bold py-2 px-6 rounded hover:bg-green-600 focus:outline-none focus:shadow-outline">
           Shop Now
-        </button>
-        </a>
+        </Link>
+     
         </div>
       
       
@@ -60,10 +51,10 @@ export default function Main() {
       <div >
          {/* Footer */}
       <footer className="bg-green-800 self-bottom text-center ">
-        <div className="w-1/2 mx-auto text-center">
+        <Link href="/register" className="w-1/2 mx-auto text-center">
         <p className="text-white font-bold mb-0">Not a Member yet?</p> 
         <p className="text-white font-bold"> Join our Sustainable Fashion Movement!</p>
-        </div>
+        </Link>
       </footer>
       </div>
       </div>
