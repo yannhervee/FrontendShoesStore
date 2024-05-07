@@ -86,6 +86,7 @@ const CheckoutShip = () => {
           
             if (userData) { // Ensure userData is not undefined
                 console.log("total check", total)
+                console.log("user info", userData)
                 setEmail(userData.email);
                 setShippingInfo({
                     firstName: userData.shippingAddress.firstName,

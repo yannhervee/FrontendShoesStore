@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
-
+import CryptoJS from 'crypto-js';
 
 const CheckoutPay = () => {
     const [cartItems, setCartItems] = useState([]);
@@ -16,8 +16,6 @@ const CheckoutPay = () => {
         expYear: '',
         cvv: '',
     });
-
-
 
     const [billingInfo, setBillingInfo] = useState({
         firstName: '',
@@ -35,6 +33,7 @@ const CheckoutPay = () => {
     const [total, setTotal] = useState(0);
     const [tax, setTax] = useState(0);
     const [subtotal, setSubtotal] = useState(0);
+    
 
     //Function to handle payment input change
     const handlePaymentInputChange = (e) => {
@@ -132,12 +131,23 @@ const CheckoutPay = () => {
         console.log("info to send pay", paymentInfo)
         console.log("info to send bil", billingInfo)
         // Implement checkout logic
+        const encryptedCardNumber = CryptoJS.AES.encrypt(paymentInfo.cardNumber.toString(), 'LoveShoeEco3799!').toString();
+        const encryptedPaymentInfo = {
+            ...paymentInfo,
+            cardNumber: encryptedCardNumber,
+        };
+
         localStorage.setItem('billing_info', JSON.stringify(billingInfo));
-        localStorage.setItem('payment_info', JSON.stringify(paymentInfo));
+        localStorage.setItem('payment_info', JSON.stringify(encryptedPaymentInfo));
 
         router.push('/checkoutReview')
     }
 
+    };
+    const decryptAndConvertToInt = (encryptedCardNumber, secretKey) => {
+        const bytes  = CryptoJS.AES.decrypt(encryptedCardNumber, secretKey);
+        const originalCardNumber = bytes.toString(CryptoJS.enc.Utf8);
+        return parseInt(originalCardNumber);
     };
 
     useEffect(() => {
@@ -182,7 +192,7 @@ const CheckoutPay = () => {
         Promise.all([fetchCartItems(), fetchUserData()])
         .then(([cartItems, userData]) => {
             setCartItems(cartItems);
-          //  console.log("cartItems,", cartItems)
+          
             const newTotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
            
             const newTax = newTotal * TAX_RATE;
@@ -191,18 +201,21 @@ const CheckoutPay = () => {
             setTotal(newTotal);
             setTax(newTax);
             setSubtotal(newSubtotal);
-          
-            if (userData) { // Ensure userData is not undefined
+            if (userData ) { // Ensure userData is not undefined
                 console.log("total check", total)
-                setEmail(userData.email);
+              //  setEmail(userData.email);
+              if(userData.paymentInformation){
+                const decryptedCardNumber = decryptAndConvertToInt(userData.paymentInformation.creditCard, 'LoveShoeEco3799!');
+                console.log("decrypted val", decryptedCardNumber)
                 setPaymentInfo({
-                    cardNumber: userData.paymentInformation.ccNumber,
+                    cardNumber: decryptedCardNumber,
                     expMonth: userData.paymentInformation.expMonth,
                     expYear: userData.paymentInformation.expYear,
                     cvv: userData.paymentInformation.cvv,
                     
                 });
-                
+            } 
+            if(userData.billingAdress){
                 setBillingInfo({
                     firstName: userData.billingAdress.firstName,
                     lastName: userData.billingAdress.lastName,
@@ -212,6 +225,7 @@ const CheckoutPay = () => {
                     zipCode: userData.billingAdress.zipCode,
                     
                 });
+            }
 
                 if(!userData.billingAdress == null){
                     setHasBilling(true)
@@ -283,6 +297,7 @@ const CheckoutPay = () => {
                             <input id="credit_card" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your card number"
                                 onChange={handlePaymentInputChange}
                                 name="cardNumber"
+                                value={paymentInfo.cardNumber}
                                 required />
                         </div>
 
@@ -292,6 +307,7 @@ const CheckoutPay = () => {
                                 <input id="exp_month" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="02"
                                     onChange={handlePaymentInputChange}
                                     name="expMonth"
+                                    value={paymentInfo.expMonth}
                                     required />
                             </div>
                             <div className="flex flex-col flex-1">
@@ -299,6 +315,7 @@ const CheckoutPay = () => {
                                 <input id="exp_year" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="2024"
                                     onChange={handlePaymentInputChange}
                                     name="expYear"
+                                    value={paymentInfo.expYear}
                                     required />
                             </div>
 
@@ -309,6 +326,7 @@ const CheckoutPay = () => {
                             <input id="cvv" type="text" className="border border-gray-300 rounded-md py-2 px-3 w-1/2 focus:outline-none focus:border-blue-500" placeholder="Enter your last name"
                                 onChange={handlePaymentInputChange}
                                 name="cvv"
+                                value={paymentInfo.cvv}
                                 required/>
                         </div>
 

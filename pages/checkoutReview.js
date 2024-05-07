@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useCart } from '@/components/cartContext';
+import CryptoJS from 'crypto-js';
 
 const CheckoutReviewPage = () => {
   // Sample data
@@ -102,8 +103,9 @@ const CheckoutReviewPage = () => {
     }
     const payment = JSON.parse(localStorage.getItem('payment_info'));
     if (payment) {
+      const decryptedCardNumber = decryptAndConvertToInt(payment.cardNumber, 'LoveShoeEco3799!');
       setPaymentInfo({
-        cardNumber: payment.cardNumber,
+        cardNumber: decryptedCardNumber,
         cvv: payment.cvv,
         expMonth: payment.expMonth,
         expYear: payment.expYear,
@@ -113,6 +115,13 @@ const CheckoutReviewPage = () => {
 
     setLoading(false);
   }, []);
+
+  const decryptAndConvertToInt = (encryptedCardNumber, secretKey) => {
+    const bytes  = CryptoJS.AES.decrypt(encryptedCardNumber, secretKey);
+    const originalCardNumber = bytes.toString(CryptoJS.enc.Utf8);
+    return parseInt(originalCardNumber);
+};
+
 
   // Function to handle the edit billing information action
   const handleEditBillingInfo = (e) => {
@@ -276,6 +285,7 @@ const CheckoutReviewPage = () => {
 
 
   const handleCheckout = async () => {
+    const encryptedCardNumber = CryptoJS.AES.encrypt(paymentInfo.cardNumber.toString(), 'LoveShoeEco3799!').toString();
     let orderData = {
      
       productWithImageDTO: cartItems.map(item => ({
@@ -307,7 +317,7 @@ const CheckoutReviewPage = () => {
         state: billingInfo.state
       },
       paymentInformation: {
-        ccNumber: paymentInfo.cardNumber,
+        ccNumber: encryptedCardNumber,
         expYear: parseInt(paymentInfo.expYear),
         expMonth: parseInt(paymentInfo.expMonth),
         cvv: parseInt(paymentInfo.cvv),

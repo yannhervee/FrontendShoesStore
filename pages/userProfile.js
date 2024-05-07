@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Link from 'next/link';
-
+import CryptoJS from 'crypto-js';
 
 const ProfilePage = () => {
 
@@ -46,6 +46,20 @@ const ProfilePage = () => {
   const [password, setPassword] = useState('');
   const [user, setUser] = useState({});
 
+  // Function to decrypt credit card information
+  // Function to decrypt credit card information
+  const decryptPaymentInfo = (encryptedPaymentInfo) => {
+    console.log("encrypted ", encryptedPaymentInfo)
+    const bytes = CryptoJS.AES.decrypt(encryptedPaymentInfo.creditCard, 'LoveShoeEco3799!');
+    const originalCardNumber = parseInt(bytes.toString(CryptoJS.enc.Utf8)); // Convert to integer
+    console.log("decrypted ", originalCardNumber)
+    return {
+      cardNumber: originalCardNumber,
+      expMonth: encryptedPaymentInfo.expMonth,
+      expYear: encryptedPaymentInfo.expYear,
+      cvv: encryptedPaymentInfo.cvv
+    };
+  };
   useEffect(() => {
     const fetchUserData = async () => {
       const token = sessionStorage.getItem('token');
@@ -69,11 +83,11 @@ const ProfilePage = () => {
         setFirstName(userData.firstName || '');
         setLastName(userData.lastName || '');
         setBillId(userData.billingAddress.id)
-        if (response.data.billingAddress == null) {
-          setHasBilling(false);
-      } else {
-          setHasBilling(true);
-      }
+        //   if (response.data.billingAddress == null) {
+        //     setHasBilling(false);
+        // } else {
+        //     setHasBilling(true);
+        // }
 
         // Check if shippingAddress is not null, otherwise set to default values
         setShippingInfo(userData.shippingAddress ? {
@@ -109,18 +123,20 @@ const ProfilePage = () => {
           zipCode: 0,
         });
 
-        // Check if paymentInformation is not null, otherwise set to default values
-        setPaymentInfo(userData.paymentInformation ? {
-          cardNumber: userData.paymentInformation.ccNumber,
-          expMonth: userData.paymentInformation.expMonth,
-          expYear: userData.paymentInformation.expYear,
-          cvv: userData.paymentInformation.cvv,
-        } : {
-          cardNumber: '',
-          expMonth: '',
-          expYear: '',
-          cvv: '',
-        });
+        // Decrypt payment information if available
+        if (userData.paymentInformation) {
+          setPaymentInfo(decryptPaymentInfo(userData.paymentInformation));
+          console.log("here")
+        } else {
+          console.log("nothing")
+          // Set default values if payment information is not available
+          setPaymentInfo({
+            cardNumber: '',
+            expMonth: '',
+            expYear: '',
+            cvv: ''
+          });
+        }
 
         setLoading(false);
       } catch (error) {
@@ -243,58 +259,60 @@ const ProfilePage = () => {
 
   };
 
-  
+
   // Function to handle the edit shiiping information action
   const handleEditPaymentInfo = async (e) => {
     e.preventDefault();
-    if(user.billingAddress== null){
+    if (user.billingAddress == null) {
       console.log("detecting null")
       alert('Failed to update payment information. Please add a billing address first');
 
       return;
-    }else{
+    } else {
       console.log("nothing detected")
-    
-    
-    const userId = sessionStorage.getItem('user');
-    const token = sessionStorage.getItem('token');
-    console.log("continue?")
 
-    if (!token || !userId) {
-      alert('Authentication error. Please log in again.');
-      router.push('/login');
-      return;
-    }
-    console.log("exp month to send", paymentInfo)
-    const paymentData = {
-      ccNumber: paymentInfo.cardNumber,
-      expYear: paymentInfo.expYear,
-      expMonth: paymentInfo.expMonth,
-      cvv: paymentInfo.cvv,
-      billingAddress: {
-        id: bilId,
-        address: billingInfo.address,
-        city: billingInfo.city,
-        zipCode: billingInfo.zipCode,
-        firstName: billingInfo.firstName,
-        lastName: billingInfo.lastName,
-        state: billingInfo.state,
+
+      const userId = sessionStorage.getItem('user');
+      const token = sessionStorage.getItem('token');
+      console.log("continue?")
+
+      if (!token || !userId) {
+        alert('Authentication error. Please log in again.');
+        router.push('/login');
+        return;
       }
-    };
-  
-    try {
-      const response = await axios.post(`http://localhost:8080/user/userPaymentInformation/${userId}`, paymentData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      console.log('Payment information updated successfully:', response.data);
-      alert('Payment information updated successfully!');
-      setPaymentInfo(paymentInfo);
-      setShowModalPayment(false);
-    } catch (error) {
-      console.error('Failed to update payment information:', error);
-      alert('Failed to update payment information. Please add a billing address first');
+      console.log("exp month to send", paymentInfo)
+      const encryptedCardNumber = CryptoJS.AES.encrypt(paymentInfo.cardNumber.toString(), 'LoveShoeEco3799!').toString();
+
+      const paymentData = {
+        creditCard: encryptedCardNumber,
+        expYear: paymentInfo.expYear,
+        expMonth: paymentInfo.expMonth,
+        cvv: paymentInfo.cvv,
+        billingAddress: {
+          id: bilId,
+          address: billingInfo.address,
+          city: billingInfo.city,
+          zipCode: billingInfo.zipCode,
+          firstName: billingInfo.firstName,
+          lastName: billingInfo.lastName,
+          state: billingInfo.state,
+        }
+      };
+
+      try {
+        const response = await axios.post(`http://localhost:8080/user/userPaymentInformation/${userId}`, paymentData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        console.log('Payment information updated successfully:', response.data);
+        alert('Payment information updated successfully!');
+        setPaymentInfo(paymentInfo);
+        setShowModalPayment(false);
+      } catch (error) {
+        console.error('Failed to update payment information:', error);
+        alert('Failed to update payment information. Please add a billing address first');
+      }
     }
-  }
 
 
   };
@@ -382,7 +400,7 @@ const ProfilePage = () => {
       console.log('Billing address updated successfully:', response.data);
       alert('Billing address updated successfully!');
       setBillingInfo(billingInfo);
-      setHasBilling(true)
+      //setHasBilling(true)
       setShowModalBilling(false); // Close the modal on successful update
 
     } catch (error) {
@@ -400,6 +418,82 @@ const ProfilePage = () => {
     setShowModalPayment(false);
 
   };
+
+  const removeBilling = async () => {
+    try {
+      const userId = sessionStorage.getItem('user')
+      const token = sessionStorage.getItem('token');
+      const response = await axios.delete(`http://localhost:8080/user/deleteBillingAddress/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      console.log('Billing address deleted successfully:', response.data);
+      setBillingInfo({
+        firstName: '',
+        lastName: '',
+        address: '',
+        city: '',
+        state: '',
+        zipCode: 0,
+      });
+      // Handle any further actions after successful deletion
+    } catch (error) {
+      console.error('Failed to delete billing address:', error);
+      // Handle error scenarios
+    }
+  };
+  
+
+  const removeShipping = async() => {
+    console.log("here remove Shipping")
+    try {
+      const userId = sessionStorage.getItem('user')
+      const token = sessionStorage.getItem('token');
+      const response = await axios.delete(`http://localhost:8080/user/deleteShippingAddress/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      console.log('shipping address deleted successfully:', response.data);
+      setShippingInfo({
+        firstName: '',
+        lastName: '',
+        address: '',
+        city: '',
+        state: '',
+        zipCode: 0,
+      });
+      // Handle any further actions after successful deletion
+    } catch (error) {
+      console.error('Failed to delete billing address:', error);
+      // Handle error scenarios
+    }
+  }
+  const removePayment = async() => {
+    console.log("here remove payment")
+    try {
+      const userId = sessionStorage.getItem('user')
+      const token = sessionStorage.getItem('token');
+      const response = await axios.delete(`http://localhost:8080/user/deletePaymentAddress/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      console.log('Payment address deleted successfully:', response.data);
+      setPaymentInfo({
+        cardNumber: '',
+        expMonth: '',
+        expYear: '',
+        cvv: '',
+      });
+      
+      // Handle any further actions after successful deletion
+    } catch (error) {
+      console.error('Failed to delete billing address:', error);
+      // Handle error scenarios
+    }
+  }
 
 
   //cancel shipping modal
@@ -428,15 +522,6 @@ const ProfilePage = () => {
     console.log("Handling cancellation of billinh info form");
 
 
-    // setShippingInfo({
-    //   firstName: shipping.firstName,
-    //   lastName: shipping.lastName,
-    //   address: shipping.address,
-    //   city: shipping.city,
-    //   state: shipping.state,
-    //   zipCode: shipping.zipCode,
-    // })
-
     console.log("Shipping info cancel", shippingInfo);
     setShowModalBilling(false);
 
@@ -448,11 +533,7 @@ const ProfilePage = () => {
     console.log('same email');
 
     console.log("Handling cancellation of email");
-    // const em = localStorage.getItem('email');
-    // if (em) {
-    //   setEmail(em)
-    // }
-    // console.log("email", email);
+
     setPassword("");
     setShowModalEmail(false);
 
@@ -464,15 +545,14 @@ const ProfilePage = () => {
     console.log('same email');
 
     console.log("Handling cancellation of name");
-    // const em = localStorage.getItem('email');
-    // if (em) {
-    //   setEmail(em)
-    // }
-    // console.log("email", email);
+
 
     setShowModalName(false);
 
   };
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
 
 
@@ -512,6 +592,8 @@ const ProfilePage = () => {
                 e.preventDefault();
                 setShowModalName(true);
               }}>Edit</button>
+
+              
           </div>
 
           <div className="flex justify-between items-center border-b py-4">
@@ -545,13 +627,19 @@ const ProfilePage = () => {
                 <p className="text-grey-800 italic">Address not set up yet.</p>
               )}
             </div>
-            <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded"
-              onClick={(e) => {
-                e.preventDefault();
-                setShowModalShipping(true);
-              }}>
-              Edit
-            </button>
+            <div className="flex flex-col">
+    <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded mb-2"
+      onClick={(e) => {
+        e.preventDefault();
+        setShowModalShipping(true);
+      }}>
+      Edit
+    </button>
+    <button className="bg-red-500 hover:bg-red-700 text-white text-sm font-bold py-1 px-4 rounded"
+     onClick={() => removeShipping()}>
+      Remove
+    </button>
+  </div>
           </div>
 
 
@@ -567,17 +655,24 @@ const ProfilePage = () => {
                 <p className="text-grey-800 italic">No card saved.</p>
               )}
             </div>
-            <button 
-    className="text-white text-sm font-bold py-1 px-4 rounded bg-green-500 hover:bg-green-700'"
-  
-    onClick={(e) => {
-        e.preventDefault();
-      
-            setShowModalPayment(true);
-        
-    }}>
-    Edit
-</button>
+            <div className="flex flex-col">
+            <button
+              className="text-white text-sm font-bold py-1 px-4 rounded bg-green-500 hover:bg-green-700 mb-2"
+
+              onClick={(e) => {
+                e.preventDefault();
+
+                setShowModalPayment(true);
+
+              }}>
+              Edit
+            </button>
+            <button className="bg-red-500 hover:bg-red-700 text-white text-sm font-bold py-1 px-4 rounded"
+    onClick={() => removePayment()}>
+      Remove
+    </button>
+    </div>
+
           </div>
 
           <div className="flex justify-between items-center border-b py-4">
@@ -593,13 +688,19 @@ const ProfilePage = () => {
                 <p className="text-grey-800 italic">Billing Address not set up yet.</p>
               )}
             </div>
-            <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded"
+            <div className="flex flex-col">
+            <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded mb-2"
               onClick={(e) => {
                 e.preventDefault();
                 setShowModalBilling(true);
               }}>
               Edit
             </button>
+            <button className="bg-red-500 hover:bg-red-700 text-white text-sm font-bold py-1 px-4 rounded"
+     onClick={() => removeBilling()}>
+      Remove
+    </button>
+    </div>
           </div>
 
         </div>
