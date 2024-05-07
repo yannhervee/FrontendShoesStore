@@ -28,6 +28,7 @@ module.exports = {
         'my-image': "url('/logo.png')",
         'home-left': "url('/img1.png')",
         'home-right': "url('/img2.png')",
+        'eco': "url('/ecoTrans.png')",
       },
       colors: {
         'pastel-pink': '#ffdfd5',

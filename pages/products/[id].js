@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useRouter } from 'next/router';
 import ImageSlider from '@/components/imageSlider';
 import { useCart } from '@/components/cartContext';
+import DecisionModal from '@/components/shoppingModal';
 
 
 const ProductDetailsPage = () => {
@@ -14,7 +15,7 @@ const ProductDetailsPage = () => {
   const [availableColors, setAvailableColors] = useState([]);
   const [currentImages, setCurrentImages] = useState([]);
   const { updateCart } = useCart();
-  const[ecoImpact, setEcoImpact] = useState([]);
+  const[showModal, setShowModal] = useState(false);
   
 
   const router = useRouter();
@@ -186,7 +187,7 @@ const ProductDetailsPage = () => {
 
       
       // Add the product to the cart or perform any other action
-      // Example: dispatching an action to add to the cart
+   
       const cartItem = {
         productId: product.product.id,
         sizeId: sizeColorDTO.size.id,
@@ -226,8 +227,8 @@ const shopping_cart = sessionStorage.getItem('cartId');
 
 if (token && userId) {
     let body = {
-        ...cartItem, // Assuming cartItem is defined elsewhere and should be included in every request
-        userId: parseInt(userId, 10) // Ensures userId is always treated as an integer
+        ...cartItem, 
+        userId: parseInt(userId, 10) 
     };
 
     // Append cartId to the body if it exists
@@ -252,7 +253,8 @@ if (token && userId) {
 }
      
 
-     // router.push("/cart");
+      //router.push("/cart");
+      setShowModal(true);
     } catch (error) {
       console.error('Error adding item to cart:', error);
       alert('Error adding item to cart. Please try again.'); // Optional: Display error message
@@ -288,14 +290,13 @@ if (token && userId) {
           </div>
         </div>
 
-        {/* Other product images */}
-        {/* <div className="flex flex-col items-center mr-8">
+        <DecisionModal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                
+            />
 
-          {productDetails.additionalImages.map((image, index) => (
-            <img key={index} src={image} alt={`Product ${index}`} className="rounded-lg mb-4" />
-          ))}
-        </div> */}
-
+  
 <div className="flex flex-col items-center mr-8 w-150 h-150">
   {product.images.map((image, index) => (
     <img key={index} 
@@ -357,10 +358,6 @@ if (token && userId) {
       <div className="mb-4 text-center ">
         <p> {product.product.description}</p>
       </div>
-
-
-      {/*************************************Temp return code adjust above ***********/}
-
 
     </>
   );

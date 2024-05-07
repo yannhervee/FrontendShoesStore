@@ -100,7 +100,7 @@ const NavBar = () => {
                     </div>
                 </div>
 
-                <div className="flex items-center">
+                <div className="flex items-center ">
                     {user ? (
                         <div className="relative mr-4">
                             <button className="flex items-center hover:underline" onClick={toggleDropdown}>
@@ -136,6 +136,13 @@ const NavBar = () => {
                         <Link href="/checkOrder">
                             <span className="hover:underline px-4 py-2 text-lg">
                                 Check Order
+                            </span>
+                        </Link>
+                    </div>
+                    <div className=" ">
+                        <Link href="/contactUs">
+                            <span className="hover:underline px-4 py-2 text-lg">
+                                Contact Us
                             </span>
                         </Link>
                     </div>
