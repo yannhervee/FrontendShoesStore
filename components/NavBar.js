@@ -132,7 +132,7 @@ const NavBar = () => {
                             </span>
                         </Link>
                     </div>
-                    <div className=" ml-8 underline">
+                    <div className=" ml-8">
                         <Link href="/checkOrder">
                             <span className="hover:underline px-4 py-2 text-lg">
                                 Check Order

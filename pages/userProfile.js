@@ -561,7 +561,7 @@ const ProfilePage = () => {
       <div className="flex justify-between items-center border-b pb-4">
         <h1 className="text-3xl font-bold">My Profile</h1>
         <div>
-          <button className="px-4 py-2 rounded bg-black text-white" >Profile</button>
+          <button className="px-4 py-2 rounded bg-green-600 text-white" >Profile</button>
           <Link className="px-4 py-2 rounded border border-gray-300 mr-2" href={"/orderHistory/"} passHref>Orders</Link>
         </div>
       </div>

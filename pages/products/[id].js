@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import ImageSlider from '@/components/imageSlider';
-import { useCart } from '@/components/cartContext';
-import DecisionModal from '@/components/shoppingModal';
+
 
 
 const ProductDetailsPage = () => {
@@ -17,10 +16,8 @@ const ProductDetailsPage = () => {
   const { updateCart } = useCart();
   const[showModal, setShowModal] = useState(false);
   
-
   const router = useRouter();
   const { id } = router.query; // Get the product ID from the URL
-
 
   useEffect(() => {
     console.log("id", id)
