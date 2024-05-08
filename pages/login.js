@@ -58,7 +58,7 @@ const LoginPage = () => {
         // Navigate to another page or clear the form
     } catch (error) {
         console.error('Registration failed:', error);
-        alert('Registration failed: ' + (error.response?.data?.message || error.message));
+        alert('SignIn failed: ' + (error.response?.data?.message || error.message));
     }
 };
 const fetchAndUpdateCart = async () => {
