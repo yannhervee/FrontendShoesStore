@@ -11,7 +11,7 @@ const OrderDetailsPage = () => {
 
   const [order, setOrder] = useState({})
   const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState({})
+  const [exist, setExist] = useState(false)
 
   useEffect(() => {
    
@@ -31,6 +31,8 @@ const OrderDetailsPage = () => {
             // setProducts(productsWithDetails);
         } catch (error) {
             console.error("Error fetching order details:", error);
+            setExist(true);
+            
         } finally {
             setLoading(false);
         }
@@ -44,7 +46,7 @@ const OrderDetailsPage = () => {
     // Calculate the date three business days from the order date
     const orderDate = new Date(order.orderDate);
     const cancellationDate = new Date(orderDate);
-    cancellationDate.setDate(cancellationDate.getDate() + 1);
+    cancellationDate.setDate(cancellationDate.getDate() + 2);
 
     // Check if the current date is within the cancellation period
     const currentDate = new Date();
@@ -69,6 +71,19 @@ const OrderDetailsPage = () => {
 
   if (loading) {
     return <div>Loading...</div>;
+  }
+
+  if (exist) {
+    return (
+      <div className="bg-gray-100 min-h-screen flex justify-center items-center">
+        <div className="text-center">
+          <p className="text-xl font-bold mb-4">No order exists</p>
+          <Link href="/productListing" className="text-blue-500 hover:underline">
+            Return to Product Listing
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (

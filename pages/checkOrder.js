@@ -8,10 +8,11 @@ const CheckOrderPage = () => {
   const handleOrderLookup = (e) => {
     e.preventDefault();
     // Implement order lookup logic here
-    router.push({
-      pathname: '/orderdetail',
-      query: { orderNumber: orderNumber }, // Pass as a query param
-    });
+    // router.push({
+    //   pathname: '/order',
+    //   query: { orderNumber: orderNumber }, // Pass as a query param
+    // });
+    router.push(`/order/${orderNumber}`);
     console.log('Looking up order:', orderNumber);
   };
 
