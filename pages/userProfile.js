@@ -105,8 +105,6 @@ const ProfilePage = () => {
         console.log('User data fetched successfully:', response); // Log the response data
         const userData = response.data;
         setUser(response.data)
-
-
         setEmail(userData.email || '');
         setFirstName(userData.firstName || '');
         setLastName(userData.lastName || '');
@@ -221,7 +219,6 @@ const ProfilePage = () => {
     setShippingInfo({ ...shippingInfo, [name]: value });
   };
 
-
   // Function to handle billing input changes
   const handleBillingInputChange = (e) => {
     const { name, value } = e.target;
@@ -271,6 +268,38 @@ const ProfilePage = () => {
     return errors;
 };
 
+const validateShippingInfo = () => {
+  const errors = [];
+
+  // Regular expressions for zip code and phone number validation
+  const zipCodeRegex = /^\d{5}$/;
+  const phoneNumberRegex = /^\d{10}$/;
+
+  // Check if zip code is valid
+  if (!zipCodeRegex.test(shippingInfo.zipCode)) {
+      errors.push("The zip code must be positive and have 5 digits.");
+  }
+
+  // Check if phone number is valid
+  // if (!phoneNumberRegex.test(shippingInfo.phoneNumber)) {
+  //     errors.push("The phone number must be 10 digits.");
+  // }
+
+  return errors;
+};
+
+const validateBillingInfo = () => {
+  const errors = [];
+  // Regular expressions for zip code and phone number validation
+  const zipCodeRegex = /^\d{5}$/;
+
+  // Check if zip code is valid
+  if (!zipCodeRegex.test(billingInfo.zipCode)) {
+      errors.push("The zip code must be positive and have 5 digits.");
+  }
+
+  return errors;
+};
 
   // Function to handle shipping input changes
   const handlePaymentInputChange = (e) => {
@@ -443,6 +472,11 @@ const ProfilePage = () => {
     // Implement modal logic to edit billing information
     console.log('Edit shipping information');
     console.log("updated shipping is", shippingInfo)
+    const validationErrors = validateShippingInfo();
+    if (validationErrors.length > 0) {
+      // Handle errors (e.g., display them to the user)
+      alert(validationErrors.join("\n"));
+  }else{
 
 
     const userId = sessionStorage.getItem('user'); // Assuming userId is stored in sessionStorage
@@ -477,23 +511,18 @@ const ProfilePage = () => {
       console.error('Failed to update shipping address:', error);
       alert('Failed to update shipping address. Please try again.');
     }
-
-    // setShippingInfo(shippingInfo);
-
-    // setShowModalShipping(false);
+  }
 
   };
 
   // Function to handle the edit shiiping information action
   const handleEditBillingInfo = async (e) => {
     e.preventDefault();
-    // Implement modal logic to edit billing information
-    console.log('Edit billing information');
-    console.log("updated billing is", shippingInfo)
-
-
-
-
+    const validationErrors = validateBillingInfo();
+    if (validationErrors.length > 0) {
+        // Handle errors (e.g., display them to the user)
+        alert(validationErrors.join("\n"));
+    }else{
     const userId = sessionStorage.getItem('user'); // Assuming userId is stored in sessionStorage
     const token = sessionStorage.getItem('token'); // Assuming token is stored in sessionStorage
 
@@ -528,17 +557,12 @@ const ProfilePage = () => {
       console.error('Failed to update billing address:', error);
       alert('Failed to update Billing address. Please try again.');
     }
-
-
+  }
   };
 
-
   const handleCancelModalPayment = () => {
-
-
     setShowModalPayment(false);
     setPaymentInfo(curPayment)
-
   };
 
   const removeBilling = async () => {
@@ -567,7 +591,6 @@ const ProfilePage = () => {
     }
   };
   
-
   const removeShipping = async() => {
     console.log("here remove Shipping")
     try {
@@ -624,16 +647,6 @@ const ProfilePage = () => {
 
     console.log("Handling cancellation of shipping info form");
 
-
-    // setShippingInfo({
-    //   firstName: shipping.firstName,
-    //   lastName: shipping.lastName,
-    //   address: shipping.address,
-    //   city: shipping.city,
-    //   state: shipping.state,
-    //   zipCode: shipping.zipCode,
-    // })
-
     console.log("Shipping info cancel", shippingInfo);
     setShippingInfo(curShipping)
     setShowModalShipping(false);
@@ -645,8 +658,6 @@ const ProfilePage = () => {
 
     console.log("Handling cancellation of billinh info form");
 
-
-    //console.log("billing info cancel", billing);
     setBillingInfo(curBilling)
     setShowModalBilling(false);
 
@@ -679,6 +690,58 @@ const ProfilePage = () => {
     return <div>Loading...</div>;
   }
 
+  const usStates = [
+    { abbreviation: 'AL', name: 'Alabama' },
+    { abbreviation: 'AK', name: 'Alaska' },
+    { abbreviation: 'AZ', name: 'Arizona' },
+    { abbreviation: 'AR', name: 'Arkansas' },
+    { abbreviation: 'CA', name: 'California' },
+    { abbreviation: 'CO', name: 'Colorado' },
+    { abbreviation: 'CT', name: 'Connecticut' },
+    { abbreviation: 'DE', name: 'Delaware' },
+    { abbreviation: 'FL', name: 'Florida' },
+    { abbreviation: 'GA', name: 'Georgia' },
+    { abbreviation: 'HI', name: 'Hawaii' },
+    { abbreviation: 'ID', name: 'Idaho' },
+    { abbreviation: 'IL', name: 'Illinois' },
+    { abbreviation: 'IN', name: 'Indiana' },
+    { abbreviation: 'IA', name: 'Iowa' },
+    { abbreviation: 'KS', name: 'Kansas' },
+    { abbreviation: 'KY', name: 'Kentucky' },
+    { abbreviation: 'LA', name: 'Louisiana' },
+    { abbreviation: 'ME', name: 'Maine' },
+    { abbreviation: 'MD', name: 'Maryland' },
+    { abbreviation: 'MA', name: 'Massachusetts' },
+    { abbreviation: 'MI', name: 'Michigan' },
+    { abbreviation: 'MN', name: 'Minnesota' },
+    { abbreviation: 'MS', name: 'Mississippi' },
+    { abbreviation: 'MO', name: 'Missouri' },
+    { abbreviation: 'MT', name: 'Montana' },
+    { abbreviation: 'NE', name: 'Nebraska' },
+    { abbreviation: 'NV', name: 'Nevada' },
+    { abbreviation: 'NH', name: 'New Hampshire' },
+    { abbreviation: 'NJ', name: 'New Jersey' },
+    { abbreviation: 'NM', name: 'New Mexico' },
+    { abbreviation: 'NY', name: 'New York' },
+    { abbreviation: 'NC', name: 'North Carolina' },
+    { abbreviation: 'ND', name: 'North Dakota' },
+    { abbreviation: 'OH', name: 'Ohio' },
+    { abbreviation: 'OK', name: 'Oklahoma' },
+    { abbreviation: 'OR', name: 'Oregon' },
+    { abbreviation: 'PA', name: 'Pennsylvania' },
+    { abbreviation: 'RI', name: 'Rhode Island' },
+    { abbreviation: 'SC', name: 'South Carolina' },
+    { abbreviation: 'SD', name: 'South Dakota' },
+    { abbreviation: 'TN', name: 'Tennessee' },
+    { abbreviation: 'TX', name: 'Texas' },
+    { abbreviation: 'UT', name: 'Utah' },
+    { abbreviation: 'VT', name: 'Vermont' },
+    { abbreviation: 'VA', name: 'Virginia' },
+    { abbreviation: 'WA', name: 'Washington' },
+    { abbreviation: 'WV', name: 'West Virginia' },
+    { abbreviation: 'WI', name: 'Wisconsin' },
+    { abbreviation: 'WY', name: 'Wyoming' }
+];
 
   return (
     <div className="bg-gray-200 min-h-screen p-8">
@@ -856,7 +919,22 @@ const ProfilePage = () => {
                 <div className="flex space-x-4">
                   <div className="flex flex-col flex-1">
                     <label htmlFor="state" className="text-sm font-semibold mb-1">State</label>
-                    <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleShippingInputChange} name="state" required />
+                    <select
+                                                id="state"
+                                                className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
+                                                value={billingInfo.state}
+                                                onChange={handleShippingInputChange}
+                                                name="state"
+                                                required
+                                            >
+                                                <option value="">Select State</option>
+                                                {usStates.map((state) => (
+                                                    <option key={state.abbreviation} value={state.abbreviation}>
+                                                        {state.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                    {/* <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleShippingInputChange} name="state" required /> */}
                   </div>
                   <div className="flex flex-col flex-1">
                     <label htmlFor="zip_code" className="text-sm font-semibold mb-1">Zip Code</label>
@@ -903,7 +981,22 @@ const ProfilePage = () => {
                 <div className="flex space-x-4">
                   <div className="flex flex-col flex-1">
                     <label htmlFor="state" className="text-sm font-semibold mb-1">State</label>
-                    <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleBillingInputChange} name="state" required />
+                    <select
+                                                id="state"
+                                                className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
+                                                value={billingInfo.state}
+                                                onChange={handleBillingInputChange}
+                                                name="state"
+                                                required
+                                            >
+                                                <option value="">Select State</option>
+                                                {usStates.map((state) => (
+                                                    <option key={state.abbreviation} value={state.abbreviation}>
+                                                        {state.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                    {/* <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleBillingInputChange} name="state" required /> */}
                   </div>
                   <div className="flex flex-col flex-1">
                     <label htmlFor="zip_code" className="text-sm font-semibold mb-1">Zip Code</label>

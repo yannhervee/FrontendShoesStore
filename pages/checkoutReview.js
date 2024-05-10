@@ -121,18 +121,57 @@ const CheckoutReviewPage = () => {
     const originalCardNumber = bytes.toString(CryptoJS.enc.Utf8);
     return parseInt(originalCardNumber);
 };
+const validateShippingInfo = () => {
+  const errors = [];
 
+  // Regular expressions for zip code and phone number validation
+  const zipCodeRegex = /^\d{5}$/;
+  const phoneNumberRegex = /^\d{10}$/;
+
+  // Check if zip code is valid
+  if (!zipCodeRegex.test(shippingInfo.zipCode)) {
+      errors.push("The zip code must be positive and have 5 digits.");
+  }
+
+  // // Check if phone number is valid
+  // if (!phoneNumberRegex.test(shippingInfo.phoneNumber)) {
+  //     errors.push("The phone number must be 10 digits.");
+  // }
+
+  return errors;
+};
+
+const validateBillingInfo = () => {
+  const errors = [];
+  // Regular expressions for zip code and phone number validation
+  const zipCodeRegex = /^\d{5}$/;
+
+  // Check if zip code is valid
+  if (!zipCodeRegex.test(billingInfo.zipCode)) {
+      errors.push("The zip code must be positive and have 5 digits.");
+  }
+
+  return errors;
+};
 
   // Function to handle the edit billing information action
   const handleEditBillingInfo = (e) => {
     // Implement modal logic to edit billing information
+
     e.preventDefault();
+
+    const validationErrors = validateBillingInfo();
+    if (validationErrors.length > 0) {
+        // Handle errors (e.g., display them to the user)
+        alert(validationErrors.join("\n"));
+    }else{
     console.log('Edit billing information');
     console.log("updated billing is", billingInfo)
     localStorage.setItem('billing_info', JSON.stringify(billingInfo));
     setBillingInfo(billingInfo);
 
     setShowModalBilling(false);
+    }
 
   };
 
@@ -143,14 +182,22 @@ const CheckoutReviewPage = () => {
   };
 
   // Function to handle the edit shiiping information action
-  const handleEditShippingInfo = () => {
+  const handleEditShippingInfo = (e) => {
     // Implement modal logic to edit billing information
+    e.preventDefault();
     console.log('Edit shipping information');
     console.log("updated shipping is", shippingInfo)
+    
+    const validationErrors = validateShippingInfo();
+    if (validationErrors.length > 0) {
+      // Handle errors (e.g., display them to the user)
+      alert(validationErrors.join("\n"));
+  }else{
     localStorage.setItem('shipping_info', JSON.stringify(shippingInfo));
     setShippingInfo(shippingInfo);
 
     setShowModalShipping(false);
+  }
 
   };
 
@@ -161,14 +208,21 @@ const CheckoutReviewPage = () => {
   };
 
   // Function to handle the edit shiiping information action
-  const handleEditPaymentInfo = () => {
+  const handleEditPaymentInfo = (e) => {
     // Implement modal logic to edit billing information
+    e.preventDefault();
     console.log('Edit payment information');
     console.log("updated payment is", paymentInfo)
+    const validationErrors = validatePaymentInfo();
+    if (validationErrors.length > 0) {
+        // Handle errors (e.g., display them to the user)
+        alert(validationErrors.join("\n"));
+    }else{
     localStorage.setItem('payment_info', JSON.stringify(paymentInfo));
     setPaymentInfo(paymentInfo);
 
     setShowModalPayment(false);
+    }
 
   };
 
@@ -184,6 +238,49 @@ const CheckoutReviewPage = () => {
     setShowModalEmail(false);
 
   };
+
+  const validatePaymentInfo = () => {
+    const errors = [];
+
+    // Convert number to string to check the length for cardNumber
+    if (paymentInfo.cardNumber.toString().length !== 16) {
+        errors.push("The card number must be exactly 16 digits.");
+    }
+
+    // Validate expiration month
+    if (!paymentInfo.expMonth) {
+        errors.push("Please enter the expiration month.");
+    } else if (paymentInfo.expMonth < 1 || paymentInfo.expMonth > 12) {
+        errors.push("Please enter a valid month (1-12).");
+    }
+
+    // Validate expiration year
+    if (!paymentInfo.expYear) {
+        errors.push("Please enter the expiration year.");
+    } else {
+        const currentYear = new Date().getFullYear();
+        if (paymentInfo.expYear < currentYear || paymentInfo.expYear > currentYear + 50) {
+            errors.push("Please enter a valid expiration year.");
+        }
+    }
+
+    // Check if both month and year fields have values before validating the expiration date
+    if (paymentInfo.expMonth && paymentInfo.expYear) {
+        // Check if the provided expiration date is in the past
+        const currentDate = new Date();
+        const enteredDate = new Date(paymentInfo.expYear, paymentInfo.expMonth - 1, 1); // Subtract 1 from the month to match JavaScript's Date constructor
+        if (enteredDate < currentDate) {
+            errors.push("The expiration date must be in the future.");
+        }
+    }
+
+    // Convert number to string to check the length for CVV
+    if (paymentInfo.cvv.toString().length !== 3) {
+        errors.push("The CVV must be exactly 3 digits.");
+    }
+
+    return errors;
+};
 
   // Function to handle shipping input changes
   const handlePaymentInputChange = (e) => {
@@ -365,6 +462,59 @@ const CheckoutReviewPage = () => {
     }
   };
 
+  const usStates = [
+    { abbreviation: 'AL', name: 'Alabama' },
+    { abbreviation: 'AK', name: 'Alaska' },
+    { abbreviation: 'AZ', name: 'Arizona' },
+    { abbreviation: 'AR', name: 'Arkansas' },
+    { abbreviation: 'CA', name: 'California' },
+    { abbreviation: 'CO', name: 'Colorado' },
+    { abbreviation: 'CT', name: 'Connecticut' },
+    { abbreviation: 'DE', name: 'Delaware' },
+    { abbreviation: 'FL', name: 'Florida' },
+    { abbreviation: 'GA', name: 'Georgia' },
+    { abbreviation: 'HI', name: 'Hawaii' },
+    { abbreviation: 'ID', name: 'Idaho' },
+    { abbreviation: 'IL', name: 'Illinois' },
+    { abbreviation: 'IN', name: 'Indiana' },
+    { abbreviation: 'IA', name: 'Iowa' },
+    { abbreviation: 'KS', name: 'Kansas' },
+    { abbreviation: 'KY', name: 'Kentucky' },
+    { abbreviation: 'LA', name: 'Louisiana' },
+    { abbreviation: 'ME', name: 'Maine' },
+    { abbreviation: 'MD', name: 'Maryland' },
+    { abbreviation: 'MA', name: 'Massachusetts' },
+    { abbreviation: 'MI', name: 'Michigan' },
+    { abbreviation: 'MN', name: 'Minnesota' },
+    { abbreviation: 'MS', name: 'Mississippi' },
+    { abbreviation: 'MO', name: 'Missouri' },
+    { abbreviation: 'MT', name: 'Montana' },
+    { abbreviation: 'NE', name: 'Nebraska' },
+    { abbreviation: 'NV', name: 'Nevada' },
+    { abbreviation: 'NH', name: 'New Hampshire' },
+    { abbreviation: 'NJ', name: 'New Jersey' },
+    { abbreviation: 'NM', name: 'New Mexico' },
+    { abbreviation: 'NY', name: 'New York' },
+    { abbreviation: 'NC', name: 'North Carolina' },
+    { abbreviation: 'ND', name: 'North Dakota' },
+    { abbreviation: 'OH', name: 'Ohio' },
+    { abbreviation: 'OK', name: 'Oklahoma' },
+    { abbreviation: 'OR', name: 'Oregon' },
+    { abbreviation: 'PA', name: 'Pennsylvania' },
+    { abbreviation: 'RI', name: 'Rhode Island' },
+    { abbreviation: 'SC', name: 'South Carolina' },
+    { abbreviation: 'SD', name: 'South Dakota' },
+    { abbreviation: 'TN', name: 'Tennessee' },
+    { abbreviation: 'TX', name: 'Texas' },
+    { abbreviation: 'UT', name: 'Utah' },
+    { abbreviation: 'VT', name: 'Vermont' },
+    { abbreviation: 'VA', name: 'Virginia' },
+    { abbreviation: 'WA', name: 'Washington' },
+    { abbreviation: 'WV', name: 'West Virginia' },
+    { abbreviation: 'WI', name: 'Wisconsin' },
+    { abbreviation: 'WY', name: 'Wyoming' }
+];
+
 
   if (loading) {
     return <div>Loading...</div>;
@@ -482,7 +632,22 @@ const CheckoutReviewPage = () => {
                 <div className="flex space-x-4">
                   <div className="flex flex-col flex-1">
                     <label htmlFor="state" className="text-sm font-semibold mb-1">State</label>
-                    <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleBillingInputChange} name="state" required />
+                    <select
+                                                id="state"
+                                                className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
+                                                value={billingInfo.state}
+                                                onChange={handleBillingInputChange}
+                                                name="state"
+                                                required
+                                            >
+                                                <option value="">Select State</option>
+                                                {usStates.map((state) => (
+                                                    <option key={state.abbreviation} value={state.abbreviation}>
+                                                        {state.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                    {/* <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleBillingInputChange} name="state" required /> */}
                   </div>
                   <div className="flex flex-col flex-1">
                     <label htmlFor="zip_code" className="text-sm font-semibold mb-1">Zip Code</label>
@@ -527,7 +692,22 @@ const CheckoutReviewPage = () => {
                 <div className="flex space-x-4">
                   <div className="flex flex-col flex-1">
                     <label htmlFor="state" className="text-sm font-semibold mb-1">State</label>
-                    <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleShippingInputChange} name="state" required />
+                    <select
+                                                id="state"
+                                                className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
+                                                value={billingInfo.state}
+                                                onChange={handleShippingInputChange}
+                                                name="state"
+                                                required
+                                            >
+                                                <option value="">Select State</option>
+                                                {usStates.map((state) => (
+                                                    <option key={state.abbreviation} value={state.abbreviation}>
+                                                        {state.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                    {/* <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleShippingInputChange} name="state" required /> */}
                   </div>
                   <div className="flex flex-col flex-1">
                     <label htmlFor="zip_code" className="text-sm font-semibold mb-1">Zip Code</label>
@@ -582,7 +762,7 @@ const CheckoutReviewPage = () => {
                 </div>
                 <div className="flex flex-col flex-1 mb-16">
                   <label htmlFor="cvv" className="text-sm font-semibold mb-1">CVV</label>
-                  <input id="cvv" type="text" className="border border-gray-300 rounded-md py-2 px-3 w-1/2 focus:outline-none focus:border-blue-500" placeholder="Enter your last name"
+                  <input id="cvv" type="text" className="border border-gray-300 rounded-md py-2 px-3 w-1/2 focus:outline-none focus:border-blue-500" placeholder="Enter security number"
                     onChange={handlePaymentInputChange}
                     name="cvv"
                     required />
