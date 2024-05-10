@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import { faLock } from '@fortawesome/free-solid-svg-icons';
+import { faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Link from 'next/link';
 import CryptoJS from 'crypto-js';
@@ -70,10 +70,23 @@ const ProfilePage = () => {
   const [bilId, setBillId] = useState(0)
   const router = useRouter();
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [user, setUser] = useState({});
+  const [errors, setErrors] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: '',
+  });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
 
   // Function to decrypt credit card information
-  
+
   const decryptPaymentInfo = (encryptedPaymentInfo) => {
     console.log("encrypted ", encryptedPaymentInfo)
     const bytes = CryptoJS.AES.decrypt(encryptedPaymentInfo.creditCard, 'LoveShoeEco3799!');
@@ -87,7 +100,39 @@ const ProfilePage = () => {
       cvv: encryptedPaymentInfo.cvv
     };
   };
-  
+
+  const validateConfirmPassword = (confirmPassword) => {
+    if (!confirmPassword) {
+      return 'Confirm password is required';
+    } else if (confirmPassword !== password) {
+      return 'Passwords do not match';
+    }
+    return '';
+  };
+  const validatePassword = (password) => {
+    if (!password) {
+      return 'Password is required';
+    } else if (password.length < 8) {
+      return 'Password should be at least 8 characters long';
+    } else if (!/[A-Z]/.test(password)) {
+      return 'Password should contain at least one capital letter';
+    }
+    return '';
+  };
+
+  const handlePasswordChange = (value) => {
+    setPassword(value);
+    const errorMessage = validatePassword(value);
+    setErrors({ ...errors, password: errorMessage });
+  };
+
+  const handleConfirmPasswordChange = (value) => {
+    setConfirmPassword(value);
+    const errorMessage = validateConfirmPassword(value);
+    setErrors({ ...errors, confirmPassword: errorMessage });
+  };
+
+
   useEffect(() => {
     const fetchUserData = async () => {
       const token = sessionStorage.getItem('token');
@@ -109,7 +154,7 @@ const ProfilePage = () => {
         setFirstName(userData.firstName || '');
         setLastName(userData.lastName || '');
         setBillId(userData.billingAddress.id)
-   
+
         setShippingInfo(userData.shippingAddress ? {
           firstName: userData.shippingAddress.firstName,
           lastName: userData.shippingAddress.lastName,
@@ -227,101 +272,101 @@ const ProfilePage = () => {
 
   const validatePaymentInfo = () => {
     const errors = [];
-    
+
     // Convert number to string to check the length for cardNumber
     if (paymentInfo.cardNumber.toString().length !== 16) {
-        errors.push("The card number must be exactly 16 digits.");
+      errors.push("The card number must be exactly 16 digits.");
     }
-    
+
     // Validate expiration month
     if (!paymentInfo.expMonth) {
-        errors.push("Please enter the expiration month.");
+      errors.push("Please enter the expiration month.");
     } else if (paymentInfo.expMonth < 1 || paymentInfo.expMonth > 12) {
-        errors.push("Please enter a valid month (1-12).");
+      errors.push("Please enter a valid month (1-12).");
     }
-    
+
     // Validate expiration year
     if (!paymentInfo.expYear) {
-        errors.push("Please enter the expiration year.");
+      errors.push("Please enter the expiration year.");
     } else {
-        const currentYear = new Date().getFullYear();
-        if (paymentInfo.expYear < currentYear || paymentInfo.expYear > currentYear + 50) {
-            errors.push("Please enter a valid expiration year.");
-        }
+      const currentYear = new Date().getFullYear();
+      if (paymentInfo.expYear < currentYear || paymentInfo.expYear > currentYear + 50) {
+        errors.push("Please enter a valid expiration year.");
+      }
     }
 
     // Check if both month and year fields have values before validating the expiration date
     if (paymentInfo.expMonth && paymentInfo.expYear) {
-        // Check if the provided expiration date is in the past
-        const currentDate = new Date();
-        const enteredDate = new Date(paymentInfo.expYear, paymentInfo.expMonth - 1, 1); // Subtract 1 from the month to match JavaScript's Date constructor
-        if (enteredDate < currentDate) {
-            errors.push("The expiration date must be in the future.");
-        }
+      // Check if the provided expiration date is in the past
+      const currentDate = new Date();
+      const enteredDate = new Date(paymentInfo.expYear, paymentInfo.expMonth - 1, 1); // Subtract 1 from the month to match JavaScript's Date constructor
+      if (enteredDate < currentDate) {
+        errors.push("The expiration date must be in the future.");
+      }
     }
-    
+
     // Convert number to string to check the length for CVV
     if (paymentInfo.cvv.toString().length !== 3) {
-        errors.push("The CVV must be exactly 3 digits.");
+      errors.push("The CVV must be exactly 3 digits.");
     }
-    
+
     return errors;
-};
+  };
 
-const validateShippingInfo = () => {
-  const errors = [];
+  const validateShippingInfo = () => {
+    const errors = [];
 
-  // Regular expressions for zip code and phone number validation
-  const zipCodeRegex = /^\d{5}$/;
-  const phoneNumberRegex = /^\d{10}$/;
+    // Regular expressions for zip code and phone number validation
+    const zipCodeRegex = /^\d{5}$/;
+    const phoneNumberRegex = /^\d{10}$/;
 
-  // Check if zip code is valid
-  if (!zipCodeRegex.test(shippingInfo.zipCode)) {
+    // Check if zip code is valid
+    if (!zipCodeRegex.test(shippingInfo.zipCode)) {
       errors.push("The zip code must be positive and have 5 digits.");
-  }
+    }
 
-  // Check if phone number is valid
-  // if (!phoneNumberRegex.test(shippingInfo.phoneNumber)) {
-  //     errors.push("The phone number must be 10 digits.");
-  // }
+    // Check if phone number is valid
+    // if (!phoneNumberRegex.test(shippingInfo.phoneNumber)) {
+    //     errors.push("The phone number must be 10 digits.");
+    // }
 
-  return errors;
-};
+    return errors;
+  };
 
-const validateBillingInfo = () => {
-  const errors = [];
-  // Regular expressions for zip code and phone number validation
-  const zipCodeRegex = /^\d{5}$/;
+  const validateBillingInfo = () => {
+    const errors = [];
+    // Regular expressions for zip code and phone number validation
+    const zipCodeRegex = /^\d{5}$/;
 
-  // Check if zip code is valid
-  if (!zipCodeRegex.test(billingInfo.zipCode)) {
+    // Check if zip code is valid
+    if (!zipCodeRegex.test(billingInfo.zipCode)) {
       errors.push("The zip code must be positive and have 5 digits.");
-  }
+    }
 
-  return errors;
-};
+    return errors;
+  };
 
   // Function to handle shipping input changes
   const handlePaymentInputChange = (e) => {
-   
+
     const { name, value } = e.target;
-    
+
     // Check if the value is empty
     if (value.trim() === '') {
-        // If the value is empty, update the state with an empty value
-        setPaymentInfo({ ...paymentInfo, [name]: '' });
-        return; // Exit the function early
+      // If the value is empty, update the state with an empty value
+      setPaymentInfo({ ...paymentInfo, [name]: '' });
+      return; // Exit the function early
     }
 
     // Check if the value is numeric
     if (!isNaN(value)) {
-        // Convert the values to the correct type before updating the state
-        const parsedValue = name === 'cardNumber' || name === 'expMonth' || name === 'expYear' || name === 'cvv' ? parseInt(value) : value;
-        setPaymentInfo({ ...paymentInfo, [name]: parsedValue });
+      // Convert the values to the correct type before updating the state
+      const parsedValue = name === 'cardNumber' || name === 'expMonth' || name === 'expYear' || name === 'cvv' ? parseInt(value) : value;
+      setPaymentInfo({ ...paymentInfo, [name]: parsedValue });
     } else {
-        // Display an alert to the user
-        alert('Please enter numeric values for card number, expiration month, expiration year, and CVV.');
-        e.target.value = '';
+      // Display an alert to the user
+      alert('Please enter numeric values for card number, expiration month, expiration year, and CVV.');
+      e.target.value = '';
     }
   };
 
@@ -380,7 +425,7 @@ const validateBillingInfo = () => {
       alert('password cannot be empty.');
       return;
     }
-   // console.log("password sent", passData)
+    // console.log("password sent", passData)
 
     try {
       const response = await axios.put(`http://localhost:8080/user/updatePassword/${userId}`, { password: password }, {
@@ -389,6 +434,8 @@ const validateBillingInfo = () => {
       });
       console.log('password updated successfully:', response.data);
       alert('password updated successfully!');
+      setPassword("");
+      setConfirmPassword("");
       setShowModalEmail(false); // Close the modal on success
     } catch (error) {
       console.error('Failed to update password:', error);
@@ -415,53 +462,53 @@ const validateBillingInfo = () => {
         // Handle errors (e.g., display them to the user)
         alert(validationErrors.join("\n"));
         return;
-    }else{
+      } else {
 
-      console.log("nothing detected")
+        console.log("nothing detected")
 
-      const userId = sessionStorage.getItem('user');
-      const token = sessionStorage.getItem('token');
-      console.log("continue?")
+        const userId = sessionStorage.getItem('user');
+        const token = sessionStorage.getItem('token');
+        console.log("continue?")
 
-      if (!token || !userId) {
-        alert('Authentication error. Please log in again.');
-        router.push('/login');
-        return;
-      }
-      console.log("exp month to send", paymentInfo)
-      const encryptedCardNumber = CryptoJS.AES.encrypt(paymentInfo.cardNumber.toString(), 'LoveShoeEco3799!').toString();
-
-      const paymentData = {
-        creditCard: encryptedCardNumber,
-        expYear: paymentInfo.expYear,
-        expMonth: paymentInfo.expMonth,
-        cvv: paymentInfo.cvv,
-        billingAddress: {
-          id: bilId,
-          address: billingInfo.address,
-          city: billingInfo.city,
-          zipCode: billingInfo.zipCode,
-          firstName: billingInfo.firstName,
-          lastName: billingInfo.lastName,
-          state: billingInfo.state,
+        if (!token || !userId) {
+          alert('Authentication error. Please log in again.');
+          router.push('/login');
+          return;
         }
-      };
+        console.log("exp month to send", paymentInfo)
+        const encryptedCardNumber = CryptoJS.AES.encrypt(paymentInfo.cardNumber.toString(), 'LoveShoeEco3799!').toString();
 
-      try {
-        const response = await axios.post(`http://localhost:8080/user/userPaymentInformation/${userId}`, paymentData, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        console.log('Payment information updated successfully:', response.data);
-        alert('Payment information updated successfully!');
-        setPaymentInfo(paymentInfo);
-        setCurPayment(paymentInfo);
-        setShowModalPayment(false);
-      } catch (error) {
-        console.error('Failed to update payment information:', error);
-        alert('Failed to update payment information. Please add a billing address first');
+        const paymentData = {
+          creditCard: encryptedCardNumber,
+          expYear: paymentInfo.expYear,
+          expMonth: paymentInfo.expMonth,
+          cvv: paymentInfo.cvv,
+          billingAddress: {
+            id: bilId,
+            address: billingInfo.address,
+            city: billingInfo.city,
+            zipCode: billingInfo.zipCode,
+            firstName: billingInfo.firstName,
+            lastName: billingInfo.lastName,
+            state: billingInfo.state,
+          }
+        };
+
+        try {
+          const response = await axios.post(`http://localhost:8080/user/userPaymentInformation/${userId}`, paymentData, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          console.log('Payment information updated successfully:', response.data);
+          alert('Payment information updated successfully!');
+          setPaymentInfo(paymentInfo);
+          setCurPayment(paymentInfo);
+          setShowModalPayment(false);
+        } catch (error) {
+          console.error('Failed to update payment information:', error);
+          alert('Failed to update payment information. Please add a billing address first');
+        }
       }
     }
-  }
 
 
   };
@@ -476,42 +523,42 @@ const validateBillingInfo = () => {
     if (validationErrors.length > 0) {
       // Handle errors (e.g., display them to the user)
       alert(validationErrors.join("\n"));
-  }else{
+    } else {
 
 
-    const userId = sessionStorage.getItem('user'); // Assuming userId is stored in sessionStorage
-    const token = sessionStorage.getItem('token'); // Assuming token is stored in sessionStorage
+      const userId = sessionStorage.getItem('user'); // Assuming userId is stored in sessionStorage
+      const token = sessionStorage.getItem('token'); // Assuming token is stored in sessionStorage
 
-    if (!token || !userId) {
-      alert('Authentication error. Please log in again.');
-      router.push('/login'); // Redirect to login page if authentication details are missing
-      return;
+      if (!token || !userId) {
+        alert('Authentication error. Please log in again.');
+        router.push('/login'); // Redirect to login page if authentication details are missing
+        return;
+      }
+
+      const shippingData = {
+        address: shippingInfo.address,
+        city: shippingInfo.city,
+        zipCode: shippingInfo.zipCode,
+        firstName: shippingInfo.firstName,
+        lastName: shippingInfo.lastName,
+        state: shippingInfo.state,
+      };
+
+      try {
+        const response = await axios.post(`http://localhost:8080/user/userShippingAddress/${userId}`, shippingData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        console.log('Shipping address updated successfully:', response.data);
+        alert('Shipping address updated successfully!');
+        setShippingInfo(shippingInfo);
+        setCurShipping(shippingInfo)
+        setShowModalShipping(false); // Close the modal on successful update
+
+      } catch (error) {
+        console.error('Failed to update shipping address:', error);
+        alert('Failed to update shipping address. Please try again.');
+      }
     }
-
-    const shippingData = {
-      address: shippingInfo.address,
-      city: shippingInfo.city,
-      zipCode: shippingInfo.zipCode,
-      firstName: shippingInfo.firstName,
-      lastName: shippingInfo.lastName,
-      state: shippingInfo.state,
-    };
-
-    try {
-      const response = await axios.post(`http://localhost:8080/user/userShippingAddress/${userId}`, shippingData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      console.log('Shipping address updated successfully:', response.data);
-      alert('Shipping address updated successfully!');
-      setShippingInfo(shippingInfo);
-      setCurShipping(shippingInfo)
-      setShowModalShipping(false); // Close the modal on successful update
-
-    } catch (error) {
-      console.error('Failed to update shipping address:', error);
-      alert('Failed to update shipping address. Please try again.');
-    }
-  }
 
   };
 
@@ -520,44 +567,44 @@ const validateBillingInfo = () => {
     e.preventDefault();
     const validationErrors = validateBillingInfo();
     if (validationErrors.length > 0) {
-        // Handle errors (e.g., display them to the user)
-        alert(validationErrors.join("\n"));
-    }else{
-    const userId = sessionStorage.getItem('user'); // Assuming userId is stored in sessionStorage
-    const token = sessionStorage.getItem('token'); // Assuming token is stored in sessionStorage
+      // Handle errors (e.g., display them to the user)
+      alert(validationErrors.join("\n"));
+    } else {
+      const userId = sessionStorage.getItem('user'); // Assuming userId is stored in sessionStorage
+      const token = sessionStorage.getItem('token'); // Assuming token is stored in sessionStorage
 
-    if (!token || !userId) {
-      alert('Authentication error. Please log in again.');
-      router.push('/login'); // Redirect to login page if authentication details are missing
-      return;
+      if (!token || !userId) {
+        alert('Authentication error. Please log in again.');
+        router.push('/login'); // Redirect to login page if authentication details are missing
+        return;
+      }
+
+      const billingData = {
+        address: billingInfo.address,
+        city: billingInfo.city,
+        zipCode: billingInfo.zipCode,
+        firstName: billingInfo.firstName,
+        lastName: billingInfo.lastName,
+        state: billingInfo.state,
+      };
+
+      try {
+        const response = await axios.post(`http://localhost:8080/user/userBillingAddress/${userId}`, billingData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        console.log('Billing address updated successfully:', response.data);
+        alert('Billing address updated successfully!');
+        setBillingInfo(billingInfo);
+        setBillId(response.data.id)
+        setCurBilling(billingInfo);
+        //setHasBilling(true)
+        setShowModalBilling(false); // Close the modal on successful update
+
+      } catch (error) {
+        console.error('Failed to update billing address:', error);
+        alert('Failed to update Billing address. Please try again.');
+      }
     }
-
-    const billingData = {
-      address: billingInfo.address,
-      city: billingInfo.city,
-      zipCode: billingInfo.zipCode,
-      firstName: billingInfo.firstName,
-      lastName: billingInfo.lastName,
-      state: billingInfo.state,
-    };
-
-    try {
-      const response = await axios.post(`http://localhost:8080/user/userBillingAddress/${userId}`, billingData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      console.log('Billing address updated successfully:', response.data);
-      alert('Billing address updated successfully!');
-      setBillingInfo(billingInfo);
-      setBillId(response.data.id)
-      setCurBilling(billingInfo);
-      //setHasBilling(true)
-      setShowModalBilling(false); // Close the modal on successful update
-
-    } catch (error) {
-      console.error('Failed to update billing address:', error);
-      alert('Failed to update Billing address. Please try again.');
-    }
-  }
   };
 
   const handleCancelModalPayment = () => {
@@ -590,8 +637,8 @@ const validateBillingInfo = () => {
       // Handle error scenarios
     }
   };
-  
-  const removeShipping = async() => {
+
+  const removeShipping = async () => {
     console.log("here remove Shipping")
     try {
       const userId = sessionStorage.getItem('user')
@@ -616,7 +663,7 @@ const validateBillingInfo = () => {
       // Handle error scenarios
     }
   }
-  const removePayment = async() => {
+  const removePayment = async () => {
     console.log("here remove payment")
     try {
       const userId = sessionStorage.getItem('user')
@@ -633,7 +680,7 @@ const validateBillingInfo = () => {
         expYear: '',
         cvv: '',
       });
-      
+
       // Handle any further actions after successful deletion
     } catch (error) {
       console.error('Failed to delete billing address:', error);
@@ -671,6 +718,7 @@ const validateBillingInfo = () => {
     console.log("Handling cancellation of email");
 
     setPassword("");
+    setConfirmPassword("");
     setShowModalEmail(false);
 
   };
@@ -741,7 +789,7 @@ const validateBillingInfo = () => {
     { abbreviation: 'WV', name: 'West Virginia' },
     { abbreviation: 'WI', name: 'Wisconsin' },
     { abbreviation: 'WY', name: 'Wyoming' }
-];
+  ];
 
   return (
     <div className="bg-gray-200 min-h-screen p-8">
@@ -780,7 +828,7 @@ const validateBillingInfo = () => {
                 setShowModalName(true);
               }}>Edit</button>
 
-              
+
           </div>
 
           <div className="flex justify-between items-center border-b py-4">
@@ -814,21 +862,19 @@ const validateBillingInfo = () => {
               )}
             </div>
             <div className="flex flex-col">
-    <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded mb-2"
-      onClick={(e) => {
-        e.preventDefault();
-        setShowModalShipping(true);
-      }}>
-      Edit
-    </button>
-    <button className="bg-red-500 hover:bg-red-700 text-white text-sm font-bold py-1 px-4 rounded"
-     onClick={() => removeShipping()}>
-      Remove
-    </button>
-  </div>
+              <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded mb-2"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowModalShipping(true);
+                }}>
+                Edit
+              </button>
+              <button className="bg-red-500 hover:bg-red-700 text-white text-sm font-bold py-1 px-4 rounded"
+                onClick={() => removeShipping()}>
+                Remove
+              </button>
+            </div>
           </div>
-
-
           <div className="flex justify-between items-center pt-4">
             <div>
               <h3 className="font-bold text-xl mb-2">Saved Card</h3>
@@ -842,22 +888,22 @@ const validateBillingInfo = () => {
               )}
             </div>
             <div className="flex flex-col">
-            <button
-              className="text-white text-sm font-bold py-1 px-4 rounded bg-green-500 hover:bg-green-700 mb-2"
+              <button
+                className="text-white text-sm font-bold py-1 px-4 rounded bg-green-500 hover:bg-green-700 mb-2"
 
-              onClick={(e) => {
-                e.preventDefault();
+                onClick={(e) => {
+                  e.preventDefault();
 
-                setShowModalPayment(true);
+                  setShowModalPayment(true);
 
-              }}>
-              Edit
-            </button>
-            <button className="bg-red-500 hover:bg-red-700 text-white text-sm font-bold py-1 px-4 rounded"
-    onClick={() => removePayment()}>
-      Remove
-    </button>
-    </div>
+                }}>
+                Edit
+              </button>
+              <button className="bg-red-500 hover:bg-red-700 text-white text-sm font-bold py-1 px-4 rounded"
+                onClick={() => removePayment()}>
+                Remove
+              </button>
+            </div>
 
           </div>
 
@@ -875,18 +921,18 @@ const validateBillingInfo = () => {
               )}
             </div>
             <div className="flex flex-col">
-            <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded mb-2"
-              onClick={(e) => {
-                e.preventDefault();
-                setShowModalBilling(true);
-              }}>
-              Edit
-            </button>
-            <button className="bg-red-500 hover:bg-red-700 text-white text-sm font-bold py-1 px-4 rounded"
-     onClick={() => removeBilling()}>
-      Remove
-    </button>
-    </div>
+              <button className="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-1 px-4 rounded mb-2"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowModalBilling(true);
+                }}>
+                Edit
+              </button>
+              <button className="bg-red-500 hover:bg-red-700 text-white text-sm font-bold py-1 px-4 rounded"
+                onClick={() => removeBilling()}>
+                Remove
+              </button>
+            </div>
           </div>
 
         </div>
@@ -920,20 +966,20 @@ const validateBillingInfo = () => {
                   <div className="flex flex-col flex-1">
                     <label htmlFor="state" className="text-sm font-semibold mb-1">State</label>
                     <select
-                                                id="state"
-                                                className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
-                                                value={billingInfo.state}
-                                                onChange={handleShippingInputChange}
-                                                name="state"
-                                                required
-                                            >
-                                                <option value="">Select State</option>
-                                                {usStates.map((state) => (
-                                                    <option key={state.abbreviation} value={state.abbreviation}>
-                                                        {state.name}
-                                                    </option>
-                                                ))}
-                                            </select>
+                      id="state"
+                      className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
+                      value={billingInfo.state}
+                      onChange={handleShippingInputChange}
+                      name="state"
+                      required
+                    >
+                      <option value="">Select State</option>
+                      {usStates.map((state) => (
+                        <option key={state.abbreviation} value={state.abbreviation}>
+                          {state.name}
+                        </option>
+                      ))}
+                    </select>
                     {/* <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleShippingInputChange} name="state" required /> */}
                   </div>
                   <div className="flex flex-col flex-1">
@@ -982,20 +1028,20 @@ const validateBillingInfo = () => {
                   <div className="flex flex-col flex-1">
                     <label htmlFor="state" className="text-sm font-semibold mb-1">State</label>
                     <select
-                                                id="state"
-                                                className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
-                                                value={billingInfo.state}
-                                                onChange={handleBillingInputChange}
-                                                name="state"
-                                                required
-                                            >
-                                                <option value="">Select State</option>
-                                                {usStates.map((state) => (
-                                                    <option key={state.abbreviation} value={state.abbreviation}>
-                                                        {state.name}
-                                                    </option>
-                                                ))}
-                                            </select>
+                      id="state"
+                      className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
+                      value={billingInfo.state}
+                      onChange={handleBillingInputChange}
+                      name="state"
+                      required
+                    >
+                      <option value="">Select State</option>
+                      {usStates.map((state) => (
+                        <option key={state.abbreviation} value={state.abbreviation}>
+                          {state.name}
+                        </option>
+                      ))}
+                    </select>
                     {/* <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleBillingInputChange} name="state" required /> */}
                   </div>
                   <div className="flex flex-col flex-1">
@@ -1021,14 +1067,64 @@ const validateBillingInfo = () => {
               <h1 className="text-2xl font-bold mb-4">Contact</h1>
               <form onSubmit={handleEmailChange} className="space-y-4">
 
+
                 <div className="flex flex-col">
-                  <label htmlFor="address" className="text-sm font-semibold mb-1">password</label>
-                  <input id="address" type="password" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter new password" onChange={(e) => setPassword(e.target.value)} name="email" required />
+                  <label htmlFor="address" className="text-sm font-semibold mb-1">Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      className={`border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-md py-2 px-3 pr-10 focus:outline-none focus:border-blue-500`}
+                      placeholder="Enter new password"
+                      onChange={(e) => handlePasswordChange(e.target.value)}
+                      value={password}
+                      name="password"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} className="text-gray-400 h-6 w-6" />
+                    </button>
+                  </div>
+                 
                 </div>
+                {errors.password && <p className="text-red-500">{errors.password}</p>}
+
+                <div className="flex flex-col">
+                  <label htmlFor="address" className="text-sm font-semibold mb-1">Confirm Password</label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      className={`border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-md py-2 px-3 pr-10 focus:outline-none focus:border-blue-500`}
+                      placeholder="Retype password"
+                      value={confirmPassword}
+                      onChange={(e) => handleConfirmPasswordChange(e.target.value)}
+                      name="confirmPassword"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      <FontAwesomeIcon icon={showConfirmPassword ? faEye : faEyeSlash} className="text-gray-400 h-6 w-6" />
+                    </button>
+                  </div>
+                  {errors.confirmPassword && <p className="text-red-500">{errors.confirmPassword}</p>}
+                </div>
+
 
                 {/* Add more form fields for shipping information as needed */}
                 <div className="flex justify-end">
-                  <button type='submit' className="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Update Password</button>
+                  <button
+                    type='submit'
+                    disabled={!!errors.password || !!errors.confirmPassword}
+                    className={`bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4 ${!!errors.password || !!errors.confirmPassword ? 'cursor-not-allowed opacity-50' : ''}`}
+                  >
+                    Update Password
+                  </button>
                   <button onClick={handleCancelModalEmail} className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Cancel</button>
                 </div>
               </form>

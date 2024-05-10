@@ -6,21 +6,21 @@ import { useDispatch } from 'react-redux';
 import { setUser } from '@/globalRedux/features/userSlice';
 import CryptoJS from 'crypto-js';
 import Link from 'next/link';
+import { faLock, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
   const { updateCart } = useCart();
 
+  const [showPassword, setShowPassword] = useState(false);
+
   const dispatch = useDispatch()
  
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    // const secretKey = 'LoveShoeEco3799!'
-    // console.log("secretKey", secretKey)
-    // const encryptedPassword = CryptoJS.AES.encrypt(password, secretKey).toString();
-    // console.log("encrypted", encryptedPassword)
   
     try {
         const response = await axios.post('http://localhost:8080/generateToken', {
@@ -143,21 +143,30 @@ const fetchAndUpdateCart = async () => {
               />
             </div>
             <div className="mt-4">
-              <label htmlFor="password" className="block text-sm font-medium text-black">
+            <label htmlFor="password" className="block text-sm font-medium text-black">
                 Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-black placeholder-gray-500 text-black rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm "
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+            </label>
+            <div className="relative">
+                <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-black placeholder-gray-500 text-black rounded-b-md focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                >
+                    <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} className="text-gray-400 h-6 w-6" />
+                </button>
             </div>
+        </div>
           </div>
 
           <div className="flex items-center justify-between">

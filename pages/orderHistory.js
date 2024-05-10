@@ -29,7 +29,7 @@ const OrderHistoryPage = () => {
     fetchOrderHistory();
   }, []);
 
-  if (loading) {
+  if (loading || !orders) {
     return <div>Loading...</div>;
   }
 
@@ -54,24 +54,27 @@ const OrderHistoryPage = () => {
                   <div className="font-bold">Order # {order.orderId}</div>
                   <div className="text-gray-500">{new Date(order.orderDate).toLocaleDateString()}</div>
                 </div>
-                {order.productWithImageDTO.map((item, index) => (
-                  <div key={index} className="flex items-center mb-4 last:mb-0">
-                    <div className="bg-gray-300 w-24 h-24 mr-4">
-                      <img
-                        src={item.image.url}
-                        alt={"image of shoe"}
-                        className="rounded-lg h-full cursor-pointer"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-lg font-bold">${item.image.productId.price}</div>
-                      <div className="text-gray-700">{item.color}</div>
-                      <div className="text-gray-700">{item.image.productId.name}</div>
-                      <div className="text-gray-700">{item.image.productId.category.category}</div>
-                      <div className="text-gray-700">{item.size}</div>
-                    </div>
-                  </div>
-                ))}
+                {order.productWithImageDTO.map((item, index) => {
+  console.log("Item:", item);
+  return (
+    <div key={index} className="flex items-center mb-4 last:mb-0">
+      <div className="bg-gray-300 w-24 h-24 mr-4">
+        <img
+          src={item.image.url}
+          alt={"image of shoe"}
+          className="rounded-lg h-full cursor-pointer"
+        />
+      </div>
+      <div className="flex-1">
+        <div className="text-lg font-bold">${item.image.productId.price}</div>
+        <div className="text-gray-700">{item.color}</div>
+        <div className="text-gray-700">{item.image.productId.name}</div>
+        <div className="text-gray-700">{item.image.productId.category.category}</div>
+        <div className="text-gray-700">{item.size}</div>
+      </div>
+    </div>
+  );
+})}
                 <div className="text-right font-bold text-lg mt-2">
                   Subtotal: ${order.total}
                 </div>
