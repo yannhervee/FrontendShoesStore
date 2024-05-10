@@ -160,8 +160,6 @@ const CheckoutReviewPage = () => {
     setShippingInfo({ ...shippingInfo, [name]: value });
   };
 
-
-
   // Function to handle the edit shiiping information action
   const handleEditPaymentInfo = () => {
     // Implement modal logic to edit billing information

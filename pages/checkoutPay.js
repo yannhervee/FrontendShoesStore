@@ -33,19 +33,19 @@ const CheckoutPay = () => {
     const [total, setTotal] = useState(0);
     const [tax, setTax] = useState(0);
     const [subtotal, setSubtotal] = useState(0);
-    
+
 
     //Function to handle payment input change
     const handlePaymentInputChange = (e) => {
         const { name, value } = e.target;
-    
+
         // Check if the value is empty
         if (value.trim() === '') {
             // If the value is empty, update the state with an empty value
             setPaymentInfo({ ...paymentInfo, [name]: '' });
             return; // Exit the function early
         }
-    
+
         // Check if the value is numeric
         if (!isNaN(value)) {
             // Convert the values to the correct type before updating the state
@@ -57,17 +57,35 @@ const CheckoutPay = () => {
             e.target.value = '';
         }
     };
-    
+
+    const validateBillingInfo = () => {
+        const errors = [];
+        // Regular expressions for zip code and phone number validation
+        const zipCodeRegex = /^\d{5}$/;
+
+        // Check if zip code is valid
+        if (!zipCodeRegex.test(billingInfo.zipCode)) {
+            errors.push("The zip code must be positive and have 5 digits.");
+        }
+
+        return errors;
+    };
+
     // Function to handle the edit billing information action
     const handleEditBillingInfo = () => {
         // Implement modal logic to edit billing information
         console.log('Edit billing information');
         console.log("updated billing is", billingInfo)
-        localStorage.setItem('billing_info', JSON.stringify(billingInfo));
-        setBillingInfo(billingInfo);
-        setSameAddress(false);
-        setShowModal(false);
-
+        const validationErrors = validateBillingInfo();
+        if (validationErrors.length > 0) {
+            // Handle errors (e.g., display them to the user)
+            alert(validationErrors.join("\n"));
+        } else {
+            localStorage.setItem('billing_info', JSON.stringify(billingInfo));
+            setBillingInfo(billingInfo);
+            setSameAddress(false);
+            setShowModal(false);
+        }
     };
     // Function to handle the edit billing information action
     const handleCancelModal = () => {
@@ -95,23 +113,23 @@ const CheckoutPay = () => {
         const { name, value } = e.target;
         setBillingInfo({ ...billingInfo, [name]: value });
     };
-   
+
 
     const validatePaymentInfo = () => {
         const errors = [];
-        
+
         // Convert number to string to check the length for cardNumber
         if (paymentInfo.cardNumber.toString().length !== 16) {
             errors.push("The card number must be exactly 16 digits.");
         }
-        
+
         // Validate expiration month
         if (!paymentInfo.expMonth) {
             errors.push("Please enter the expiration month.");
         } else if (paymentInfo.expMonth < 1 || paymentInfo.expMonth > 12) {
             errors.push("Please enter a valid month (1-12).");
         }
-        
+
         // Validate expiration year
         if (!paymentInfo.expYear) {
             errors.push("Please enter the expiration year.");
@@ -121,7 +139,7 @@ const CheckoutPay = () => {
                 errors.push("Please enter a valid expiration year.");
             }
         }
-    
+
         // Check if both month and year fields have values before validating the expiration date
         if (paymentInfo.expMonth && paymentInfo.expYear) {
             // Check if the provided expiration date is in the past
@@ -131,44 +149,44 @@ const CheckoutPay = () => {
                 errors.push("The expiration date must be in the future.");
             }
         }
-        
+
         // Convert number to string to check the length for CVV
         if (paymentInfo.cvv.toString().length !== 3) {
             errors.push("The CVV must be exactly 3 digits.");
         }
-        
+
         return errors;
     };
-    
+
 
     // Function to handle form submission
     const handleCheckout = (e) => {
         e.preventDefault();
 
-       
+
         const validationErrors = validatePaymentInfo();
-    if (validationErrors.length > 0) {
-        // Handle errors (e.g., display them to the user)
-        alert(validationErrors.join("\n"));
-    }else{
-        console.log("info to send pay", paymentInfo)
-        console.log("info to send bil", billingInfo)
-        // Implement checkout logic
-        const encryptedCardNumber = CryptoJS.AES.encrypt(paymentInfo.cardNumber.toString(), 'LoveShoeEco3799!').toString();
-        const encryptedPaymentInfo = {
-            ...paymentInfo,
-            cardNumber: encryptedCardNumber,
-        };
+        if (validationErrors.length > 0) {
+            // Handle errors (e.g., display them to the user)
+            alert(validationErrors.join("\n"));
+        } else {
+            console.log("info to send pay", paymentInfo)
+            console.log("info to send bil", billingInfo)
+            // Implement checkout logic
+            const encryptedCardNumber = CryptoJS.AES.encrypt(paymentInfo.cardNumber.toString(), 'LoveShoeEco3799!').toString();
+            const encryptedPaymentInfo = {
+                ...paymentInfo,
+                cardNumber: encryptedCardNumber,
+            };
 
-        localStorage.setItem('billing_info', JSON.stringify(billingInfo));
-        localStorage.setItem('payment_info', JSON.stringify(encryptedPaymentInfo));
+            localStorage.setItem('billing_info', JSON.stringify(billingInfo));
+            localStorage.setItem('payment_info', JSON.stringify(encryptedPaymentInfo));
 
-        router.push('/checkoutReview')
-    }
+            router.push('/checkoutReview')
+        }
 
     };
     const decryptAndConvertToInt = (encryptedCardNumber, secretKey) => {
-        const bytes  = CryptoJS.AES.decrypt(encryptedCardNumber, secretKey);
+        const bytes = CryptoJS.AES.decrypt(encryptedCardNumber, secretKey);
         const originalCardNumber = bytes.toString(CryptoJS.enc.Utf8);
         return parseInt(originalCardNumber);
     };
@@ -190,7 +208,7 @@ const CheckoutPay = () => {
                     console.error(`Error fetching product with ID ${item.id}:`, error);
                 }
             }
-           // setCartItems(updatedCart);
+            // setCartItems(updatedCart);
             console.log("cart items", cartItems)
             return updatedCart
 
@@ -213,75 +231,127 @@ const CheckoutPay = () => {
         fetchCartItems();
 
         Promise.all([fetchCartItems(), fetchUserData()])
-        .then(([cartItems, userData]) => {
-            setCartItems(cartItems);
-          
-            const newTotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-           
-            const newTax = newTotal * TAX_RATE;
-            const newSubtotal = newTotal + newTax;
-        
-            setTotal(newTotal);
-            setTax(newTax);
-            setSubtotal(newSubtotal);
-            if (userData ) { // Ensure userData is not undefined
-                console.log("total check", total)
-              //  setEmail(userData.email);
-              if(userData.paymentInformation){
-                const decryptedCardNumber = decryptAndConvertToInt(userData.paymentInformation.creditCard, 'LoveShoeEco3799!');
-                console.log("decrypted val", decryptedCardNumber)
-                setPaymentInfo({
-                    cardNumber: decryptedCardNumber,
-                    expMonth: userData.paymentInformation.expMonth,
-                    expYear: userData.paymentInformation.expYear,
-                    cvv: userData.paymentInformation.cvv,
-                    
-                });
-            } 
-            if(userData.billingAdress){
-                setBillingInfo({
-                    firstName: userData.billingAdress.firstName,
-                    lastName: userData.billingAdress.lastName,
-                    address: userData.billingAdress.address,
-                    city: userData.billingAdress.city,
-                    state: userData.billingAdress.state,
-                    zipCode: userData.billingAdress.zipCode,
-                    
-                });
-            }
+            .then(([cartItems, userData]) => {
+                setCartItems(cartItems);
 
-                if(!userData.billingAdress == null){
-                    setHasBilling(true)
+                const newTotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+                const newTax = newTotal * TAX_RATE;
+                const newSubtotal = newTotal + newTax;
+
+                setTotal(newTotal);
+                setTax(newTax);
+                setSubtotal(newSubtotal);
+                if (userData) { // Ensure userData is not undefined
+                    console.log("total check", total)
+                    //  setEmail(userData.email);
+                    if (userData.paymentInformation) {
+                        const decryptedCardNumber = decryptAndConvertToInt(userData.paymentInformation.creditCard, 'LoveShoeEco3799!');
+                        console.log("decrypted val", decryptedCardNumber)
+                        setPaymentInfo({
+                            cardNumber: decryptedCardNumber,
+                            expMonth: userData.paymentInformation.expMonth,
+                            expYear: userData.paymentInformation.expYear,
+                            cvv: userData.paymentInformation.cvv,
+
+                        });
+                    }
+                    if (userData.billingAdress) {
+                        setBillingInfo({
+                            firstName: userData.billingAdress.firstName,
+                            lastName: userData.billingAdress.lastName,
+                            address: userData.billingAdress.address,
+                            city: userData.billingAdress.city,
+                            state: userData.billingAdress.state,
+                            zipCode: userData.billingAdress.zipCode,
+
+                        });
+                    }
+
+                    if (!userData.billingAdress == null) {
+                        setHasBilling(true)
+                    }
                 }
-            }
-        })
-        .catch(error => {
-            console.error("Error during data fetching:", error);
-        })
-        .finally(() => {
-            console.log("what's the billing address?", billingInfo)
-            console.log("has billing", hasBilling)
-            if(!hasBilling){
-                const shippingInfo = JSON.parse(localStorage.getItem('shipping_info'));
-                if (shippingInfo) {
-                    setBillingInfo({
-                        firstName: shippingInfo.firstName,
-                        lastName: shippingInfo.lastName,
-                        address: shippingInfo.address,
-                        city: shippingInfo.city,
-                        state: shippingInfo.state,
-                        zipCode: shippingInfo.zipCode,
-                    })
+            })
+            .catch(error => {
+                console.error("Error during data fetching:", error);
+            })
+            .finally(() => {
+                console.log("what's the billing address?", billingInfo)
+                console.log("has billing", hasBilling)
+                if (!hasBilling) {
+                    const shippingInfo = JSON.parse(localStorage.getItem('shipping_info'));
+                    if (shippingInfo) {
+                        setBillingInfo({
+                            firstName: shippingInfo.firstName,
+                            lastName: shippingInfo.lastName,
+                            address: shippingInfo.address,
+                            city: shippingInfo.city,
+                            state: shippingInfo.state,
+                            zipCode: shippingInfo.zipCode,
+                        })
+                    }
+
                 }
-                
-            }
-            setLoading(false); // Set loading to false when both operations are complete
-        });
+                setLoading(false); // Set loading to false when both operations are complete
+            });
     }, []);
 
     if (loading) {
         return <div>Loading...</div>;
     }
+    const usStates = [
+        { abbreviation: 'AL', name: 'Alabama' },
+        { abbreviation: 'AK', name: 'Alaska' },
+        { abbreviation: 'AZ', name: 'Arizona' },
+        { abbreviation: 'AR', name: 'Arkansas' },
+        { abbreviation: 'CA', name: 'California' },
+        { abbreviation: 'CO', name: 'Colorado' },
+        { abbreviation: 'CT', name: 'Connecticut' },
+        { abbreviation: 'DE', name: 'Delaware' },
+        { abbreviation: 'FL', name: 'Florida' },
+        { abbreviation: 'GA', name: 'Georgia' },
+        { abbreviation: 'HI', name: 'Hawaii' },
+        { abbreviation: 'ID', name: 'Idaho' },
+        { abbreviation: 'IL', name: 'Illinois' },
+        { abbreviation: 'IN', name: 'Indiana' },
+        { abbreviation: 'IA', name: 'Iowa' },
+        { abbreviation: 'KS', name: 'Kansas' },
+        { abbreviation: 'KY', name: 'Kentucky' },
+        { abbreviation: 'LA', name: 'Louisiana' },
+        { abbreviation: 'ME', name: 'Maine' },
+        { abbreviation: 'MD', name: 'Maryland' },
+        { abbreviation: 'MA', name: 'Massachusetts' },
+        { abbreviation: 'MI', name: 'Michigan' },
+        { abbreviation: 'MN', name: 'Minnesota' },
+        { abbreviation: 'MS', name: 'Mississippi' },
+        { abbreviation: 'MO', name: 'Missouri' },
+        { abbreviation: 'MT', name: 'Montana' },
+        { abbreviation: 'NE', name: 'Nebraska' },
+        { abbreviation: 'NV', name: 'Nevada' },
+        { abbreviation: 'NH', name: 'New Hampshire' },
+        { abbreviation: 'NJ', name: 'New Jersey' },
+        { abbreviation: 'NM', name: 'New Mexico' },
+        { abbreviation: 'NY', name: 'New York' },
+        { abbreviation: 'NC', name: 'North Carolina' },
+        { abbreviation: 'ND', name: 'North Dakota' },
+        { abbreviation: 'OH', name: 'Ohio' },
+        { abbreviation: 'OK', name: 'Oklahoma' },
+        { abbreviation: 'OR', name: 'Oregon' },
+        { abbreviation: 'PA', name: 'Pennsylvania' },
+        { abbreviation: 'RI', name: 'Rhode Island' },
+        { abbreviation: 'SC', name: 'South Carolina' },
+        { abbreviation: 'SD', name: 'South Dakota' },
+        { abbreviation: 'TN', name: 'Tennessee' },
+        { abbreviation: 'TX', name: 'Texas' },
+        { abbreviation: 'UT', name: 'Utah' },
+        { abbreviation: 'VT', name: 'Vermont' },
+        { abbreviation: 'VA', name: 'Virginia' },
+        { abbreviation: 'WA', name: 'Washington' },
+        { abbreviation: 'WV', name: 'West Virginia' },
+        { abbreviation: 'WI', name: 'Wisconsin' },
+        { abbreviation: 'WY', name: 'Wyoming' }
+    ];
 
     // Calculate total price
     const totalPrice = cartItems.reduce((acc, product) => acc + (product.price * product.quantity), 0);
@@ -333,11 +403,11 @@ const CheckoutPay = () => {
                         </div>
                         <div className="flex flex-col flex-1 mb-16">
                             <label htmlFor="cvv" className="text-sm font-semibold mb-1">CVV</label>
-                            <input id="cvv" type="text" className="border border-gray-300 rounded-md py-2 px-3 w-1/2 focus:outline-none focus:border-blue-500" placeholder="Enter your last name"
+                            <input id="cvv" type="text" className="border border-gray-300 rounded-md py-2 px-3 w-1/2 focus:outline-none focus:border-blue-500" placeholder="Enter security number"
                                 onChange={handlePaymentInputChange}
                                 name="cvv"
                                 value={paymentInfo.cvv}
-                                required/>
+                                required />
                         </div>
 
                         <h2 className="flex justify-between font-bold mb--4">
@@ -363,7 +433,7 @@ const CheckoutPay = () => {
 
                         {/* Add more form fields for payment information as needed */}
                         <div className="flex flex-col">
-                        <button className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mt-16" type='submit'>Continue to review</button>
+                            <button className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mt-16" type='submit'>Continue to review</button>
                         </div>
                     </form>
                     {/*shipping method*/}
@@ -373,7 +443,7 @@ const CheckoutPay = () => {
                         <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
                             <div className="bg-white border border-gray-300 rounded-lg p-8">
                                 <h1 className="text-2xl font-bold mb-4">Billing Information</h1>
-                                <form onSubmit={handleEditBillingInfo}  className="space-y-4">
+                                <form onSubmit={handleEditBillingInfo} className="space-y-4">
                                     <div className="flex space-x-4">
                                         <div className="flex flex-col flex-1">
                                             <label htmlFor="first_name" className="text-sm font-semibold mb-1">First Name</label>
@@ -395,7 +465,22 @@ const CheckoutPay = () => {
                                     <div className="flex space-x-4">
                                         <div className="flex flex-col flex-1">
                                             <label htmlFor="state" className="text-sm font-semibold mb-1">State</label>
-                                            <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your state" onChange={handleInputChange} name="state" required />
+
+                                            <select
+                                                id="state"
+                                                className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
+                                                value={billingInfo.state}
+                                                onChange={handleInputChange}
+                                                name="state"
+                                                required
+                                            >
+                                                <option value="">Select State</option>
+                                                {usStates.map((state) => (
+                                                    <option key={state.abbreviation} value={state.abbreviation}>
+                                                        {state.name}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </div>
                                         <div className="flex flex-col flex-1">
                                             <label htmlFor="zip_code" className="text-sm font-semibold mb-1">Zip Code</label>

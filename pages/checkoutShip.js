@@ -19,14 +19,13 @@ const CheckoutShip = () => {
         phoneNumber: '',
         shippingMethod: 'standard' // You can set a default shipping method here
     });
-   // const [userInfo, setUserInfo] = useState(null);
+    // const [userInfo, setUserInfo] = useState(null);
     const handleEmailChange = (event) => {
         setEmail(event.target.value); // Assuming setEmail is your state updater function
     };
     const [total, setTotal] = useState(0);
     const [tax, setTax] = useState(0);
     const [subtotal, setSubtotal] = useState(0);
-    
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('shopping_cart')) || [];
@@ -36,7 +35,7 @@ const CheckoutShip = () => {
         const fetchCartItems = async () => {
             const updatedCart = [];
             for (const item of storedCart) {
-                 console.log("item ", item)
+                console.log("item ", item)
                 try {                       ///productBySizeColor/{pid}/{sid}/{cid}
                     const response = await axios.get(`http://localhost:8080/product/productBySizeColor/${item.productId}/${item.sizeId}/${item.colorId}`);
                     const productInfo = response.data;
@@ -50,8 +49,8 @@ const CheckoutShip = () => {
             //setCartItems(updatedCart);
             console.log("here in checkout", updatedCart)
             return updatedCart
-          //  console.log("cart items", cartItems)
-          //  setLoading(false);
+            //  console.log("cart items", cartItems)
+            //  setLoading(false);
         };
         const fetchUserData = async () => {
             if (userId && token) {
@@ -67,69 +66,147 @@ const CheckoutShip = () => {
             }
         };
 
-    
-
         //fetchCartItems();
 
         Promise.all([fetchCartItems(), fetchUserData()])
-        .then(([cartItems, userData]) => {
-            setCartItems(cartItems);
-          //  console.log("cartItems,", cartItems)
-            const newTotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-           
-            const newTax = newTotal * TAX_RATE;
-            const newSubtotal = newTotal + newTax;
-        
-            setTotal(newTotal);
-            setTax(newTax);
-            setSubtotal(newSubtotal);
-          
-            if (userData) { // Ensure userData is not undefined
-                console.log("total check", total)
-                console.log("user info", userData)
-                setEmail(userData.email);
-                setShippingInfo({
-                    firstName: userData.shippingAddress.firstName,
-                    lastName: userData.shippingAddress.lastName,
-                    address: userData.shippingAddress.address,
-                    city: userData.shippingAddress.city,
-                    state: userData.shippingAddress.state,
-                    zipCode: userData.shippingAddress.zipCode,
-                    phoneNumber: userData.mobile,
-                    shippingMethod: 'standard'
-                });
-            }
-        })
-        .catch(error => {
-            console.error("Error during data fetching:", error);
-        })
-        .finally(() => {
-            setLoading(false); // Set loading to false when both operations are complete
-        });
+            .then(([cartItems, userData]) => {
+                setCartItems(cartItems);
+                //  console.log("cartItems,", cartItems)
+                const newTotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+                const newTax = newTotal * TAX_RATE;
+                const newSubtotal = newTotal + newTax;
+
+                setTotal(newTotal);
+                setTax(newTax);
+                setSubtotal(newSubtotal);
+
+                if (userData) { // Ensure userData is not undefined
+                    console.log("total check", total)
+                    console.log("user info", userData)
+                    setEmail(userData.email);
+                    setShippingInfo({
+                        firstName: userData.shippingAddress.firstName,
+                        lastName: userData.shippingAddress.lastName,
+                        address: userData.shippingAddress.address,
+                        city: userData.shippingAddress.city,
+                        state: userData.shippingAddress.state,
+                        zipCode: userData.shippingAddress.zipCode,
+                        phoneNumber: userData.mobile,
+                        shippingMethod: 'standard'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Error during data fetching:", error);
+            })
+            .finally(() => {
+                setLoading(false); // Set loading to false when both operations are complete
+            });
 
     }, []);
 
-
-
+    const validateShippingInfo = () => {
+        const errors = [];
+    
+        // Regular expressions for zip code and phone number validation
+        const zipCodeRegex = /^\d{5}$/;
+        const phoneNumberRegex = /^\d{10}$/;
+    
+        // Check if zip code is valid
+        if (!zipCodeRegex.test(shippingInfo.zipCode)) {
+            errors.push("The zip code must be positive and have 5 digits.");
+        }
+    
+        // Check if phone number is valid
+        if (!phoneNumberRegex.test(shippingInfo.phoneNumber)) {
+            errors.push("The phone number must be 10 digits.");
+        }
+    
+        return errors;
+    };
+    
     // Function to handle form submission
     const handleShippingInfoSubmit = (e) => {
         e.preventDefault();
+        const validationErrors = validateShippingInfo();
+        if (validationErrors.length > 0) {
+            // Handle errors (e.g., display them to the user)
+            alert(validationErrors.join("\n"));
+        }else{
+
         console.log("ship", shippingInfo)
         // Save shipping information to local storage
         localStorage.setItem('shipping_info', JSON.stringify(shippingInfo));
         localStorage.setItem('email', email);
         // Redirect the user to the next step in the checkout process
         router.push('/checkoutPay');
+        }
     };
 
     // Function to handle input changes
     const handleInputChange = (e) => {
+
         const { name, value } = e.target;
         setShippingInfo({ ...shippingInfo, [name]: value });
     };
     if (loading) {
         return <div>Loading...</div>;
     }
+
+    // Array of US states with their abbreviations and names
+    const usStates = [
+        { abbreviation: 'AL', name: 'Alabama' },
+        { abbreviation: 'AK', name: 'Alaska' },
+        { abbreviation: 'AZ', name: 'Arizona' },
+        { abbreviation: 'AR', name: 'Arkansas' },
+        { abbreviation: 'CA', name: 'California' },
+        { abbreviation: 'CO', name: 'Colorado' },
+        { abbreviation: 'CT', name: 'Connecticut' },
+        { abbreviation: 'DE', name: 'Delaware' },
+        { abbreviation: 'FL', name: 'Florida' },
+        { abbreviation: 'GA', name: 'Georgia' },
+        { abbreviation: 'HI', name: 'Hawaii' },
+        { abbreviation: 'ID', name: 'Idaho' },
+        { abbreviation: 'IL', name: 'Illinois' },
+        { abbreviation: 'IN', name: 'Indiana' },
+        { abbreviation: 'IA', name: 'Iowa' },
+        { abbreviation: 'KS', name: 'Kansas' },
+        { abbreviation: 'KY', name: 'Kentucky' },
+        { abbreviation: 'LA', name: 'Louisiana' },
+        { abbreviation: 'ME', name: 'Maine' },
+        { abbreviation: 'MD', name: 'Maryland' },
+        { abbreviation: 'MA', name: 'Massachusetts' },
+        { abbreviation: 'MI', name: 'Michigan' },
+        { abbreviation: 'MN', name: 'Minnesota' },
+        { abbreviation: 'MS', name: 'Mississippi' },
+        { abbreviation: 'MO', name: 'Missouri' },
+        { abbreviation: 'MT', name: 'Montana' },
+        { abbreviation: 'NE', name: 'Nebraska' },
+        { abbreviation: 'NV', name: 'Nevada' },
+        { abbreviation: 'NH', name: 'New Hampshire' },
+        { abbreviation: 'NJ', name: 'New Jersey' },
+        { abbreviation: 'NM', name: 'New Mexico' },
+        { abbreviation: 'NY', name: 'New York' },
+        { abbreviation: 'NC', name: 'North Carolina' },
+        { abbreviation: 'ND', name: 'North Dakota' },
+        { abbreviation: 'OH', name: 'Ohio' },
+        { abbreviation: 'OK', name: 'Oklahoma' },
+        { abbreviation: 'OR', name: 'Oregon' },
+        { abbreviation: 'PA', name: 'Pennsylvania' },
+        { abbreviation: 'RI', name: 'Rhode Island' },
+        { abbreviation: 'SC', name: 'South Carolina' },
+        { abbreviation: 'SD', name: 'South Dakota' },
+        { abbreviation: 'TN', name: 'Tennessee' },
+        { abbreviation: 'TX', name: 'Texas' },
+        { abbreviation: 'UT', name: 'Utah' },
+        { abbreviation: 'VT', name: 'Vermont' },
+        { abbreviation: 'VA', name: 'Virginia' },
+        { abbreviation: 'WA', name: 'Washington' },
+        { abbreviation: 'WV', name: 'West Virginia' },
+        { abbreviation: 'WI', name: 'Wisconsin' },
+        { abbreviation: 'WY', name: 'Wyoming' }
+    ];
 
     return (
         <div className="flex justify-center p-8">
@@ -172,7 +249,7 @@ const CheckoutShip = () => {
                         </div>
                         <div className="flex flex-col">
                             <label htmlFor="address" className="text-sm font-semibold mb-1">Address</label>
-                            <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your first name"
+                            <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter address"
                                 onChange={handleInputChange}
                                 value={shippingInfo.address}
                                 name="address"
@@ -180,7 +257,7 @@ const CheckoutShip = () => {
                         </div>
                         <div className="flex flex-col">
                             <label htmlFor="city" className="text-sm font-semibold mb-1">City</label>
-                            <input id="city" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your first name"
+                            <input id="city" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your city"
                                 onChange={handleInputChange}
                                 value={shippingInfo.city}
                                 name="city"
@@ -189,22 +266,33 @@ const CheckoutShip = () => {
                         <div className="flex space-x-4">
                             <div className="flex flex-col flex-1">
                                 <label htmlFor="state" className="text-sm font-semibold mb-1">State</label>
-                                <input id="state" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your first name"
+                        
+                                <select
+                                    id="state"
+                                    className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500"
                                     value={shippingInfo.state}
                                     onChange={handleInputChange}
                                     name="state"
-                                    required />
+                                    required
+                                >
+                                    <option value="">Select State</option>
+                                    {usStates.map((state) => (
+                                        <option key={state.abbreviation} value={state.abbreviation}>
+                                            {state.name}
+                                        </option>
+                                    ))}
+                                </select>
+
                             </div>
                             <div className="flex flex-col flex-1">
                                 <label htmlFor="zip_code" className="text-sm font-semibold mb-1">Zip Code</label>
-                                <input id="zip_code" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your last name"
+                                <input id="zip_code" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your zip code"
                                     type="number" // Changed to number
                                     value={shippingInfo.zipCode}
                                     onChange={(e) => setShippingInfo({ ...shippingInfo, zipCode: parseInt(e.target.value) })}
                                     name="zipCode"
                                     required />
                             </div>
-
 
                         </div>
                         <div className="flex flex-col flex-1 mb-16">
@@ -217,7 +305,6 @@ const CheckoutShip = () => {
 
                             />
                         </div>
-
 
                         {/* Add more form fields for shipping information as needed */}
                     </form>

@@ -445,8 +445,6 @@ const ProfilePage = () => {
     console.log("updated shipping is", shippingInfo)
 
 
-
-
     const userId = sessionStorage.getItem('user'); // Assuming userId is stored in sessionStorage
     const token = sessionStorage.getItem('token'); // Assuming token is stored in sessionStorage
 
@@ -932,7 +930,7 @@ const ProfilePage = () => {
 
                 <div className="flex flex-col">
                   <label htmlFor="address" className="text-sm font-semibold mb-1">password</label>
-                  <input id="address" type="password" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter new email" onChange={(e) => setPassword(e.target.value)} name="email" required />
+                  <input id="address" type="password" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter new password" onChange={(e) => setPassword(e.target.value)} name="email" required />
                 </div>
 
                 {/* Add more form fields for shipping information as needed */}
