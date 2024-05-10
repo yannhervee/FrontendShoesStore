@@ -16,6 +16,16 @@ const ProfilePage = () => {
     state: '',
     zipCode: 0,
   });
+
+  const [curShipping, setCurShipping] = useState({
+    firstName: '',
+    lastName: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: 0,
+  });
+
   const [billingInfo, setBillingInfo] = useState({
     firstName: '',
     lastName: '',
@@ -24,7 +34,23 @@ const ProfilePage = () => {
     state: '',
     zipCode: 0,
   });
+
+  const [curBilling, setCurBilling] = useState({
+    firstName: '',
+    lastName: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: 0,
+  });
   const [paymentInfo, setPaymentInfo] = useState({
+    cardNumber: '',
+    expMonth: '',
+    expYear: '',
+    cvv: '',
+  });
+
+  const [curPayment, setCurPayment] = useState({
     cardNumber: '',
     expMonth: '',
     expYear: '',
@@ -47,10 +73,11 @@ const ProfilePage = () => {
   const [user, setUser] = useState({});
 
   // Function to decrypt credit card information
-  // Function to decrypt credit card information
+  
   const decryptPaymentInfo = (encryptedPaymentInfo) => {
     console.log("encrypted ", encryptedPaymentInfo)
     const bytes = CryptoJS.AES.decrypt(encryptedPaymentInfo.creditCard, 'LoveShoeEco3799!');
+    console.log("ccreditcard", bytes)
     const originalCardNumber = parseInt(bytes.toString(CryptoJS.enc.Utf8)); // Convert to integer
     console.log("decrypted ", originalCardNumber)
     return {
@@ -60,6 +87,7 @@ const ProfilePage = () => {
       cvv: encryptedPaymentInfo.cvv
     };
   };
+  
   useEffect(() => {
     const fetchUserData = async () => {
       const token = sessionStorage.getItem('token');
@@ -106,8 +134,40 @@ const ProfilePage = () => {
           zipCode: 0,
         });
 
+        setCurShipping(userData.shippingAddress ? {
+          firstName: userData.shippingAddress.firstName,
+          lastName: userData.shippingAddress.lastName,
+          address: userData.shippingAddress.address,
+          city: userData.shippingAddress.city,
+          state: userData.shippingAddress.state,
+          zipCode: userData.shippingAddress.zipCode,
+        } : {
+          firstName: '',
+          lastName: '',
+          address: '',
+          city: '',
+          state: '',
+          zipCode: 0,
+        });
+
         // Check if billingAddress is not null, otherwise set to default values
         setBillingInfo(userData.billingAddress ? {
+          firstName: userData.billingAddress.firstName,
+          lastName: userData.billingAddress.lastName,
+          address: userData.billingAddress.address,
+          city: userData.billingAddress.city,
+          state: userData.billingAddress.state,
+          zipCode: userData.billingAddress.zipCode,
+        } : {
+          firstName: '',
+          lastName: '',
+          address: '',
+          city: '',
+          state: '',
+          zipCode: 0,
+        });
+
+        setCurBilling(userData.billingAddress ? {
           firstName: userData.billingAddress.firstName,
           lastName: userData.billingAddress.lastName,
           address: userData.billingAddress.address,
@@ -126,11 +186,19 @@ const ProfilePage = () => {
         // Decrypt payment information if available
         if (userData.paymentInformation) {
           setPaymentInfo(decryptPaymentInfo(userData.paymentInformation));
+          setCurPayment(decryptPaymentInfo(userData.paymentInformation))
           console.log("here")
         } else {
           console.log("nothing")
           // Set default values if payment information is not available
           setPaymentInfo({
+            cardNumber: '',
+            expMonth: '',
+            expYear: '',
+            cvv: ''
+          });
+
+          setCurPayment({
             cardNumber: '',
             expMonth: '',
             expYear: '',
@@ -179,6 +247,7 @@ const ProfilePage = () => {
       // Convert the values to the correct type before updating the state
       const parsedValue = name === 'cardNumber' || name === 'expMonth' || name === 'expYear' || name === 'cvv' ? parseInt(value) : value;
       setPaymentInfo({ ...paymentInfo, [name]: parsedValue });
+      
     } else {
       // Display an alert to the user
       alert('Please enter numeric values for card number, expiration month, expiration year, and CVV.');
@@ -241,10 +310,11 @@ const ProfilePage = () => {
       alert('password cannot be empty.');
       return;
     }
-    console.log("password sent", passData)
+   // console.log("password sent", passData)
 
     try {
-      const response = await axios.put(`http://localhost:8080/updatePassword/${userId}`, { password: password }, {
+      const response = await axios.put(`http://localhost:8080/user/updatePassword/${userId}`, { password: password }, {
+        headers: { Authorization: `Bearer ${token}` }
 
       });
       console.log('password updated successfully:', response.data);
@@ -263,7 +333,7 @@ const ProfilePage = () => {
   // Function to handle the edit shiiping information action
   const handleEditPaymentInfo = async (e) => {
     e.preventDefault();
-    if (user.billingAddress == null) {
+    if (user.billingAddress == null && bilId == 0) {
       console.log("detecting null")
       alert('Failed to update payment information. Please add a billing address first');
 
@@ -307,6 +377,7 @@ const ProfilePage = () => {
         console.log('Payment information updated successfully:', response.data);
         alert('Payment information updated successfully!');
         setPaymentInfo(paymentInfo);
+        setCurPayment(paymentInfo);
         setShowModalPayment(false);
       } catch (error) {
         console.error('Failed to update payment information:', error);
@@ -352,6 +423,7 @@ const ProfilePage = () => {
       console.log('Shipping address updated successfully:', response.data);
       alert('Shipping address updated successfully!');
       setShippingInfo(shippingInfo);
+      setCurShipping(shippingInfo)
       setShowModalShipping(false); // Close the modal on successful update
 
     } catch (error) {
@@ -400,6 +472,8 @@ const ProfilePage = () => {
       console.log('Billing address updated successfully:', response.data);
       alert('Billing address updated successfully!');
       setBillingInfo(billingInfo);
+      setBillId(response.data.id)
+      setCurBilling(billingInfo);
       //setHasBilling(true)
       setShowModalBilling(false); // Close the modal on successful update
 
@@ -416,6 +490,7 @@ const ProfilePage = () => {
 
 
     setShowModalPayment(false);
+    setPaymentInfo(curPayment)
 
   };
 
@@ -437,6 +512,7 @@ const ProfilePage = () => {
         state: '',
         zipCode: 0,
       });
+      setBillId(0)
       // Handle any further actions after successful deletion
     } catch (error) {
       console.error('Failed to delete billing address:', error);
@@ -512,6 +588,7 @@ const ProfilePage = () => {
     // })
 
     console.log("Shipping info cancel", shippingInfo);
+    setShippingInfo(curShipping)
     setShowModalShipping(false);
 
   };
@@ -522,7 +599,8 @@ const ProfilePage = () => {
     console.log("Handling cancellation of billinh info form");
 
 
-    console.log("Shipping info cancel", shippingInfo);
+    //console.log("billing info cancel", billing);
+    setBillingInfo(curBilling)
     setShowModalBilling(false);
 
   };
@@ -555,13 +633,12 @@ const ProfilePage = () => {
   }
 
 
-
   return (
     <div className="bg-gray-200 min-h-screen p-8">
       <div className="flex justify-between items-center border-b pb-4">
         <h1 className="text-3xl font-bold">My Profile</h1>
         <div>
-          <button className="px-4 py-2 rounded bg-black text-white" >Profile</button>
+          <button className="px-4 py-2 rounded bg-green-600 text-white" >Profile</button>
           <Link className="px-4 py-2 rounded border border-gray-300 mr-2" href={"/orderHistory/"} passHref>Orders</Link>
         </div>
       </div>
@@ -807,12 +884,12 @@ const ProfilePage = () => {
 
                 <div className="flex flex-col">
                   <label htmlFor="address" className="text-sm font-semibold mb-1">password</label>
-                  <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your address" onChange={(e) => setPassword(e.target.value)} name="email" required />
+                  <input id="address" type="password" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter new email" onChange={(e) => setPassword(e.target.value)} name="email" required />
                 </div>
 
                 {/* Add more form fields for shipping information as needed */}
                 <div className="flex justify-end">
-                  <button type='submit' className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Save Shipping Address</button>
+                  <button type='submit' className="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Update Password</button>
                   <button onClick={handleCancelModalEmail} className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Cancel</button>
                 </div>
               </form>
