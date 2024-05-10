@@ -38,7 +38,14 @@ const CheckoutPay = () => {
     //Function to handle payment input change
     const handlePaymentInputChange = (e) => {
         const { name, value } = e.target;
-
+    
+        // Check if the value is empty
+        if (value.trim() === '') {
+            // If the value is empty, update the state with an empty value
+            setPaymentInfo({ ...paymentInfo, [name]: '' });
+            return; // Exit the function early
+        }
+    
         // Check if the value is numeric
         if (!isNaN(value)) {
             // Convert the values to the correct type before updating the state
@@ -50,8 +57,7 @@ const CheckoutPay = () => {
             e.target.value = '';
         }
     };
-
-
+    
     // Function to handle the edit billing information action
     const handleEditBillingInfo = () => {
         // Implement modal logic to edit billing information
@@ -89,33 +95,50 @@ const CheckoutPay = () => {
         const { name, value } = e.target;
         setBillingInfo({ ...billingInfo, [name]: value });
     };
+   
+
     const validatePaymentInfo = () => {
         const errors = [];
-    
+        
         // Convert number to string to check the length for cardNumber
         if (paymentInfo.cardNumber.toString().length !== 16) {
             errors.push("The card number must be exactly 16 digits.");
         }
-    
+        
         // Validate expiration month
-        if (paymentInfo.expMonth < 1 || paymentInfo.expMonth > 12) {
+        if (!paymentInfo.expMonth) {
+            errors.push("Please enter the expiration month.");
+        } else if (paymentInfo.expMonth < 1 || paymentInfo.expMonth > 12) {
             errors.push("Please enter a valid month (1-12).");
         }
-    
-        // Validate expiration year - check for reasonable expiration year
-        const currentYear = new Date().getFullYear();
-        if (paymentInfo.expYear < currentYear || paymentInfo.expYear > currentYear + 50) {
-            errors.push("Please enter a valid expiration year.");
+        
+        // Validate expiration year
+        if (!paymentInfo.expYear) {
+            errors.push("Please enter the expiration year.");
+        } else {
+            const currentYear = new Date().getFullYear();
+            if (paymentInfo.expYear < currentYear || paymentInfo.expYear > currentYear + 50) {
+                errors.push("Please enter a valid expiration year.");
+            }
         }
     
+        // Check if both month and year fields have values before validating the expiration date
+        if (paymentInfo.expMonth && paymentInfo.expYear) {
+            // Check if the provided expiration date is in the past
+            const currentDate = new Date();
+            const enteredDate = new Date(paymentInfo.expYear, paymentInfo.expMonth - 1, 1); // Subtract 1 from the month to match JavaScript's Date constructor
+            if (enteredDate < currentDate) {
+                errors.push("The expiration date must be in the future.");
+            }
+        }
+        
         // Convert number to string to check the length for CVV
         if (paymentInfo.cvv.toString().length !== 3) {
             errors.push("The CVV must be exactly 3 digits.");
         }
-    
+        
         return errors;
     };
-    
     
 
     // Function to handle form submission
@@ -254,19 +277,6 @@ const CheckoutPay = () => {
             }
             setLoading(false); // Set loading to false when both operations are complete
         });
-
-        // const shippingInfo = JSON.parse(localStorage.getItem('shipping_info'));
-        // if (shippingInfo) {
-        //     setBillingInfo({
-        //         firstName: shippingInfo.firstName,
-        //         lastName: shippingInfo.lastName,
-        //         address: shippingInfo.address,
-        //         city: shippingInfo.city,
-        //         state: shippingInfo.state,
-        //         zipCode: shippingInfo.zipCode,
-        //     })
-        // }
-        // setLoading(false);
     }, []);
 
     if (loading) {

@@ -690,7 +690,6 @@ const ProfilePage = () => {
           </div>
 
 
-
           <div className="flex justify-between items-center border-b py-4">
             <div>
               <h3 className="font-bold text-xl mb-2">Shipping Address</h3>
@@ -980,10 +979,6 @@ const ProfilePage = () => {
           </div>
         ) : null}
         {/* Modal end *************************************************** */}
-
-
-
-
 
       </div>
     </div>
