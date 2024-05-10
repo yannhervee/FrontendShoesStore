@@ -310,10 +310,11 @@ const ProfilePage = () => {
       alert('password cannot be empty.');
       return;
     }
-    console.log("password sent", passData)
+   // console.log("password sent", passData)
 
     try {
-      const response = await axios.put(`http://localhost:8080/updatePassword/${userId}`, { password: password }, {
+      const response = await axios.put(`http://localhost:8080/user/updatePassword/${userId}`, { password: password }, {
+        headers: { Authorization: `Bearer ${token}` }
 
       });
       console.log('password updated successfully:', response.data);
@@ -511,6 +512,7 @@ const ProfilePage = () => {
         state: '',
         zipCode: 0,
       });
+      setBillId(0)
       // Handle any further actions after successful deletion
     } catch (error) {
       console.error('Failed to delete billing address:', error);
@@ -882,12 +884,12 @@ const ProfilePage = () => {
 
                 <div className="flex flex-col">
                   <label htmlFor="address" className="text-sm font-semibold mb-1">password</label>
-                  <input id="address" type="text" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter your address" onChange={(e) => setPassword(e.target.value)} name="email" required />
+                  <input id="address" type="password" className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-blue-500" placeholder="Enter new email" onChange={(e) => setPassword(e.target.value)} name="email" required />
                 </div>
 
                 {/* Add more form fields for shipping information as needed */}
                 <div className="flex justify-end">
-                  <button type='submit' className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Save Shipping Address</button>
+                  <button type='submit' className="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800 mr-4">Update Password</button>
                   <button onClick={handleCancelModalEmail} className="bg-black text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">Cancel</button>
                 </div>
               </form>
